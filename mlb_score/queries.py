@@ -10,10 +10,7 @@ from mlb_score.models import Game, Schedule, TeamInfo, TeamScore
 
 def _parse_team(raw_teams: dict[str, Any], side: str) -> TeamScore:
     """Parse a team entry from raw API response into a TeamScore."""
-    team_raw = (
-        raw_teams.get(side, {})
-        .get("team", {})
-    )
+    team_raw = raw_teams.get(side, {}).get("team", {})
     info = TeamInfo(
         name=team_raw.get("name", ""),
         abbreviation=team_raw.get("abbreviation", ""),
@@ -53,12 +50,8 @@ def find_team_games(raw_data: dict[str, Any], team_name: str) -> list[Game]:
     raw_games = raw_data.get("dates", [])[0].get("games", [])
     for raw_game in raw_games:
         teams = raw_game.get("teams", {})
-        away_name = (
-            teams.get("away", {}).get("team", {}).get("name", "").lower()
-        )
-        home_name = (
-            teams.get("home", {}).get("team", {}).get("name", "").lower()
-        )
+        away_name = teams.get("away", {}).get("team", {}).get("name", "").lower()
+        home_name = teams.get("home", {}).get("team", {}).get("name", "").lower()
 
         if team_name_lower in away_name or team_name_lower in home_name:
             matches.append(parse_game(raw_game))

@@ -7,15 +7,13 @@ import sys
 from datetime import date, timedelta
 
 from mlb_score.api import ApiError, fetch_date_range
+from mlb_score.display import print_no_results, print_results
 from mlb_score.queries import build_schedule
-from mlb_score.display import print_results, print_no_results
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Look up MLB game outcomes for a team."
-    )
+    parser = argparse.ArgumentParser(description="Look up MLB game outcomes for a team.")
     parser.add_argument(
         "team",
         help="Team name (e.g. 'Cardinals', 'Dodgers', 'Yankees')",

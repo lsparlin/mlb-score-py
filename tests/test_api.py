@@ -1,12 +1,12 @@
 """Tests for API client error handling."""
 
-from datetime import date, timedelta
+from datetime import date
 from unittest.mock import patch
 from urllib.error import URLError
 
 import pytest
 
-from mlb_score.api import ApiError, fetch_schedule, fetch_date_range
+from mlb_score.api import ApiError, fetch_date_range, fetch_schedule
 
 
 def test_fetch_schedule_raises_api_error_on_network_failure():

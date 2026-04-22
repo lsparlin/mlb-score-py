@@ -1,7 +1,7 @@
 """Tests for display formatting."""
 
-from mlb_score.models import Game, TeamInfo, TeamScore, Schedule
-from mlb_score.display import format_game, print_results, print_no_results
+from mlb_score.display import format_game, print_no_results, print_results
+from mlb_score.models import Game, Schedule, TeamInfo, TeamScore
 
 
 def _team(name: str) -> TeamInfo:
@@ -62,6 +62,7 @@ def test_print_results_outputs(capsys):
     )
     schedule = Schedule()
     from datetime import date
+
     schedule.games_by_date[date(2026, 4, 21)] = [game]
 
     print_results(schedule, date(2026, 4, 21), "Cardinals")
@@ -71,6 +72,7 @@ def test_print_results_outputs(capsys):
 
 def test_print_no_results_outputs(capsys):
     from datetime import date
+
     print_no_results("Pirates", date(2026, 4, 21))
     captured = capsys.readouterr()
     assert "No games found" in captured.out

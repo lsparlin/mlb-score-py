@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 
 from mlb_score.models import Game, Schedule
-from mlb_score.queries import find_team_games, parse_game, build_schedule
+from mlb_score.queries import build_schedule, find_team_games, parse_game
 from tests.conftest import load_fixture
 
 

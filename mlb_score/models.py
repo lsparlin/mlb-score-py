@@ -10,6 +10,7 @@ from typing import Optional
 @dataclass(frozen=True)
 class TeamInfo:
     """Represents an MLB team from the API response."""
+
     name: str
     location: str = ""
     abbreviation: str = ""
@@ -24,6 +25,7 @@ class TeamInfo:
 @dataclass(frozen=True)
 class TeamScore:
     """A team's result in a single game."""
+
     team: TeamInfo
     score: int = 0
     is_winner: Optional[bool] = None
@@ -41,6 +43,7 @@ class TeamScore:
 @dataclass(frozen=True)
 class Game:
     """A single MLB game with both teams and metadata."""
+
     away_team: TeamScore
     home_team: TeamScore
     venue: str = ""
@@ -79,6 +82,7 @@ class Game:
 @dataclass
 class Schedule:
     """Collection of games for a date range."""
+
     games_by_date: dict[date, list[Game]] = field(default_factory=dict)
 
     @property

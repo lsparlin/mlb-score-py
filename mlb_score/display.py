@@ -41,4 +41,4 @@ def print_results(schedule: Schedule, target_date: date, team: str) -> None:
 def print_no_results(team: str, target_date: date) -> None:
     """Print a message when no games are found."""
     print(f"  No games found for '{team}' on {target_date}.")
-    print(f"  Try a different team name or check the date.")
+    print("  Try a different team name or check the date.")

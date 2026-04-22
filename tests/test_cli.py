@@ -3,12 +3,9 @@
 from datetime import date
 from unittest.mock import patch
 
-import pytest
-
 from mlb_score.api import ApiError
 from mlb_score.cli import main, parse_args
 from tests.conftest import load_fixture
-
 
 # --- Argument parsing ---
 
@@ -105,5 +102,4 @@ def test_main_defaults_to_yesterday():
     assert len(call_log) == 1
     target_date, _ = call_log[0]
     # Should be yesterday (not today)
-    from datetime import timedelta
     assert target_date < date.today()

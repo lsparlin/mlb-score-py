@@ -8,6 +8,7 @@ Usage:
 """
 
 import sys
+
 from mlb_score.cli import main
 
 if __name__ == "__main__":

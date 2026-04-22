@@ -8,13 +8,14 @@ from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-
 MLB_API = "https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}"
 
 
 class ApiError(Exception):
     """Raised when the MLB API request fails."""
+
     pass
+
 
 def fetch_schedule(date_str: str) -> dict[str, Any]:
     """Fetch the MLB schedule for a single date (YYYY-MM-DD).
@@ -45,6 +46,3 @@ def fetch_date_range(
         data = fetch_schedule(lookup_date.isoformat())
         results.append((lookup_date, data))
     return results
-
-
-
