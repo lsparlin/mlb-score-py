@@ -48,7 +48,7 @@ def print_results(schedule: Schedule, target_date: date, team: str) -> None:
     """Print a full schedule of results to stdout."""
     # Header block
     header = _colorize(f"🏟️  {target_date.strftime('%A, %B %d, %Y')}", BOLD, CYN)
-    subtitle = _colorize(f"🔎  {team}", DIM)
+    subtitle = _colorize(f"⚾  {team}", DIM)
     sep = "─" * 48
 
     print()
@@ -65,7 +65,7 @@ def print_results(schedule: Schedule, target_date: date, team: str) -> None:
         # Date header (shown when multiple dates or between groups)
         if len(dates) > 1:
             date_label = _colorize(
-                f"{lookup_date.strftime('%Y-%m-%d (%a)')}", BOLD, CYN
+                f"📅  {lookup_date.strftime('%Y-%m-%d (%a)')}", BOLD, CYN
             )
             print(f"  {date_label}")
             print(_colorize("  " + sep, DIM))
