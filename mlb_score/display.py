@@ -44,11 +44,14 @@ def format_game(game: Game) -> str:
     )
 
 
-def print_results(schedule: Schedule, target_date: date, team: str) -> None:
+def print_results(schedule: Schedule, target_date: date, team: str, *, label: str = "") -> None:
     """Print a full schedule of results to stdout."""
     # Header block
     header = _colorize(f"🏟️  {target_date.strftime('%A, %B %d, %Y')}", BOLD, CYN)
-    subtitle = _colorize(f"⚾  {team}", DIM)
+    subtitle_parts = [f"⚾  {team}"]
+    if label:
+        subtitle_parts.append(_colorize(label, DIM))
+    subtitle = _colorize(" · ".join(subtitle_parts), DIM)
     sep = "─" * 48
 
     print()

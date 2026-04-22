@@ -46,6 +46,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     target_date = resolve_target_date(args)
 
+    # Build a human-readable label for the date range
+    if args.date is None and args.days == 1:
+        label = "Yesterday"
+    elif args.date is None:
+        label = f"Last {args.days} days"
+    else:
+        label = ""
+
     try:
         fetched_data = fetch_date_range(target_date, args.days)
     except ApiError as e:
@@ -58,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
         print_no_results(args.team, target_date)
         return 1
 
-    print_results(schedule, target_date, args.team)
+    print_results(schedule, target_date, args.team, label=label)
     return 0
 
 
