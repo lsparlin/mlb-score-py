@@ -5,9 +5,15 @@ CLI tool and Python library to look up MLB game outcomes for a given team.
 ## Usage
 
 ```bash
-python3 mlb_score.py Cardinals          # yesterday's game
-python3 mlb_score.py Yankees -d 2026-04-15  # specific date
-python3 mlb_score.py Dodgers -n 3        # last 3 days
+mlb-score Cardinals                    # yesterday's game (with "Yesterday" label)
+mlb-score Yankees -d 2026-04-15       # specific date
+mlb-score Dodgers -n 3                 # last 3 days (shows "Last 3 days")
+```
+
+Or via the script directly:
+
+```bash
+python3 mlb_score.py Cardinals
 ```
 
 ### Arguments
@@ -17,6 +23,14 @@ python3 mlb_score.py Dodgers -n 3        # last 3 days
 | `team` | Team name (positional) | required |
 | `-d, --date` | Specific date (YYYY-MM-DD) | yesterday |
 | `-n, --days` | Number of days to look back | 1 |
+
+### Output
+
+Colored terminal output with:
+- 📅 Date header in bold cyan
+- ⚾ Team name with context label ("Yesterday", "Last N days")
+- Scores in bright white, venue/time dimmed
+- WIN in green, LOSS in red
 
 ## As a Library
 
@@ -35,11 +49,34 @@ print_results(schedule, date.today() - timedelta(days=1), "Cardinals")
 
 | Module | Responsibility |
 |--------|---------------|
-| `mlb_score.api` | MLB Stats API client (`fetch_schedule`, `MLBApiClient`) |
+| `mlb_score.api` | MLB Stats API client (`fetch_schedule`, `fetch_date_range`) |
 | `mlb_score.models` | Data models (`Game`, `TeamInfo`, `TeamScore`, `Schedule`) |
 | `mlb_score.queries` | Filtering and parsing (`find_team_games`, `build_schedule`) |
-| `mlb_score.display` | Formatting output (`format_game`, `print_results`) |
+| `mlb_score.display` | Formatting output with ANSI colors (`format_game`, `print_results`) |
 | `mlb_score.cli` | CLI argument parsing and entry point |
+
+## Development
+
+```bash
+# Set up environment (requires uv)
+uv sync
+
+# Run tests
+uv run pytest -v
+
+# Lint and format
+uv run ruff check .
+uv run ruff format .
+```
+
+### Tooling
+
+| Tool | Purpose |
+|------|---------|
+| [hatchling](https://github.com/pypa/hatch) | Build backend |
+| [pytest](https://pytest.org/) | Testing (38 tests, fixtures from real API responses) |
+| [ruff](https://docs.astral.sh/ruff/) | Linting and formatting |
+| [uv](https://docs.astral.sh/uv/) | Dependency management |
 
 ## Team name hints
 
@@ -47,4 +84,5 @@ Use the team nickname as it appears in MLB's API: `Cardinals`, `Dodgers`, `Yanke
 
 ## Requirements
 
-- Python 3.7+ (stdlib only, no dependencies)
+- Python 3.9+ (stdlib only, no runtime dependencies)
+- [uv](https://docs.astral.sh/uv/) for development
