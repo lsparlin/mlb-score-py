@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlb-score"
+version = "0.1.0"
+description = "CLI tool to look up MLB game outcomes for a given team."
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "Lewis Sparlin"},
+]
+
+[project.scripts]
+mlb-score = "mlb_score.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["mlb_score*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
