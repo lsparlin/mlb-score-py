@@ -16,8 +16,8 @@ authors = [
 [project.scripts]
 mlb-score = "mlb_score.cli:main"
 
-[project.optional-dependencies]
-dev = ["pytest"]
+[dependency-groups]
+dev = ["pytest", "ruff"]
 
 
 [tool.pytest.ini_options]
