@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "mlb-score"
@@ -19,8 +19,6 @@ mlb-score = "mlb_score.cli:main"
 [project.optional-dependencies]
 dev = ["pytest"]
 
-[tool.setuptools.packages.find]
-include = ["mlb_score*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
