@@ -17,3 +17,16 @@ Several parts of the application assume a "happy path":
 
 ## Expected Outcome
 The tool will no longer crash with Python tracebacks. Instead, it will provide helpful, human-readable error messages, improving the perceived quality and reliability of the tool.
+
+## Status: ✅ Implemented
+
+## Implementation
+- **`cli.py`**: `resolve_target_date()` wraps `date.fromisoformat` in try/except, raises `UserError` on `ValueError` with a formatted message.
+- **`cli.py`**: `main()` validates `args.days < 1` and raises `UserError` for non-positive integers.
+- **`cli.py`**: Both error paths are caught in `main()` and printed as `"Error: {message}"` to stderr with exit code 1.
+- **`client.py`**: `UserError` class added for user-facing input errors, distinct from `ApiError` for external failures.
+- **`client.py`**: `_fetch_raw()` catches `json.JSONDecodeError` and wraps it in `ApiError` with context.
+- **`client.py`**: `_parse_games()` uses null-safe guard (`isinstance(first, dict)`) on `dates[0]` to prevent IndexError on malformed API responses.
+- **`__init__.py`**: `UserError` exported in `__all__` for public API access.
+- **Tests**: Added 3 CLI validation tests (`test_main_rejects_zero_days`, `test_main_rejects_negative_days`, `test_main_handles_bad_date_format`) and 2 API robustness tests (`test_fetch_schedule_raises_api_error_on_invalid_json`, `test_fetch_schedule_handles_null_dates_entry`).
+- **Test cleanup**: Removed `test_main_handles_user_error_from_client` (tested a theoretical path with no production caller).
