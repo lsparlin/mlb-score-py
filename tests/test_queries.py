@@ -13,6 +13,10 @@ _marlins = TeamInfo(name="Miami Marlins", location="Miami")
 _astros = TeamInfo(name="Houston Astros", location="Houston")
 _guardians = TeamInfo(name="Cleveland Guardians", location="Cleveland")
 
+
+# --- Fixture games ---
+
+
 def _cardinals_vs_marlins():
     """St. Louis Cardinals @ Miami Marlins — Cardinals won 5-3."""
     return Game(

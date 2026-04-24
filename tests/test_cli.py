@@ -3,9 +3,9 @@
 from datetime import date, timedelta
 from unittest.mock import patch
 
-from mlb_score.client import ApiError
 from mlb_score.cli import main, parse_args
-from mlb_score.models import Game, Schedule
+from mlb_score.client import ApiError
+from mlb_score.models import Game
 from tests.conftest import load_fixture
 
 # --- Argument parsing ---
@@ -149,3 +149,30 @@ def test_main_defaults_to_yesterday():
     target_date, _ = call_log[0]
     # Should be yesterday (not today)
     assert target_date < date.today()
+
+
+# --- main() input validation ---
+
+
+def test_main_rejects_zero_days(capsys):
+    """Days of 0 raises UserError with a helpful message."""
+    code = main(["Cardinals", "-n", "0"])
+    assert code == 1
+    captured = capsys.readouterr()
+    assert "positive integer" in captured.err
+
+
+def test_main_rejects_negative_days(capsys):
+    """Negative days raises UserError."""
+    code = main(["Cardinals", "-n", "-3"])
+    assert code == 1
+    captured = capsys.readouterr()
+    assert "positive integer" in captured.err
+
+
+def test_main_handles_bad_date_format(capsys):
+    """Malformed date strings produce a user-friendly error."""
+    code = main(["Cardinals", "-d", "not-a-date"])
+    assert code == 1
+    captured = capsys.readouterr()
+    assert "Invalid date format" in captured.err

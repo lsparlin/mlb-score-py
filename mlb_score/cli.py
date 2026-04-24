@@ -6,7 +6,7 @@ import argparse
 import sys
 from datetime import date, timedelta
 
-from mlb_score.client import ApiError, MlbClient
+from mlb_score.client import ApiError, MlbClient, UserError
 from mlb_score.display import print_no_results, print_results
 from mlb_score.queries import build_schedule
 
@@ -37,14 +37,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def resolve_target_date(args: argparse.Namespace) -> date:
     """Determine the target date from arguments."""
     if args.date:
-        return date.fromisoformat(args.date)
+        try:
+            return date.fromisoformat(args.date)
+        except ValueError:
+            raise UserError(
+                f"Invalid date format '{args.date}'. Use YYYY-MM-DD."
+            )
     return date.today() - timedelta(days=1)
 
 
 def main(argv: list[str] | None = None) -> int:
     """Main entry point. Returns exit code."""
     args = parse_args(argv)
-    target_date = resolve_target_date(args)
 
     # Build a human-readable label for the date range
     if args.date is None and args.days == 1:
@@ -55,10 +59,21 @@ def main(argv: list[str] | None = None) -> int:
         label = ""
 
     try:
+        target_date = resolve_target_date(args)
+    except UserError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+    try:
+        if args.days < 1:
+            raise UserError("Days must be a positive integer.")
         client = MlbClient()
         games_by_date = client.fetch_date_range(target_date, args.days)
     except ApiError as e:
         print(f"{e}", file=sys.stderr)
+        return 1
+    except UserError as e:
+        print(f"Error: {e}", file=sys.stderr)
         return 1
 
     schedule = build_schedule(games_by_date, args.team)

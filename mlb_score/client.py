@@ -12,9 +12,25 @@ from mlb_score.models import Game, GameState, TeamInfo, TeamScore
 
 MLB_API = "https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}"
 
+# Maps MLB API status.statusCode values to GameState.
+# Reference: https://statsapi.mlb.com/api/doc
+MLB_STATUS_CODE_MAP: dict[str, GameState] = {
+    "F": GameState.FINAL,
+    "I": GameState.LIVE,
+    "P": GameState.SCHEDULED,
+    "W": GameState.SCHEDULED,  # walkup / warmup
+    "S": GameState.SCHEDULED,  # scheduled (delayed)
+}
+
 
 class ApiError(Exception):
     """Raised when the MLB API request fails."""
+
+    pass
+
+
+class UserError(Exception):
+    """Raised when user-provided input is invalid."""
 
     pass
 
@@ -64,6 +80,8 @@ class MlbClient:
                 return json.loads(resp.read().decode())
         except URLError as e:
             raise ApiError(f"Error fetching data for {date_str}: {e}") from e
+        except json.JSONDecodeError as e:
+            raise ApiError(f"Invalid response from MLB API for {date_str}: {e}") from e
 
     def _parse_games(self, raw: dict[str, Any]) -> list[Game]:
         """Parse all games from a raw API response."""
@@ -71,26 +89,19 @@ class MlbClient:
         if not dates:
             return []
         games: list[Game] = []
-        for raw_game in dates[0].get("games", []):
+        first = dates[0] if dates else None
+        if not isinstance(first, dict):
+            return []
+        for raw_game in first.get("games", []):
             games.append(self._parse_game(raw_game))
         return games
-
-    # Maps MLB API status.statusCode values to GameState.
-    # Reference: https://statsapi.mlb.com/api/doc
-    _STATUS_CODE_MAP: dict[str, GameState] = {
-        "F": GameState.FINAL,
-        "I": GameState.LIVE,
-        "P": GameState.SCHEDULED,
-        "W": GameState.SCHEDULED,  # walkup / warmup
-        "S": GameState.SCHEDULED,  # scheduled (delayed)
-    }
 
     def _parse_game(self, raw: dict[str, Any]) -> Game:
         """Convert a raw API game object into a structured Game model."""
         teams = raw.get("teams", {})
         status = raw.get("status", {})
         code = status.get("statusCode", "F")
-        state = self._STATUS_CODE_MAP.get(code, GameState.SCHEDULED)
+        state = MLB_STATUS_CODE_MAP.get(code, GameState.SCHEDULED)
         return Game(
             away_team=self._parse_team(teams, "away"),
             home_team=self._parse_team(teams, "home"),

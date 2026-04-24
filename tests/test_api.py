@@ -105,6 +105,27 @@ def test_fetch_schedule_parses_games_into_models(schedule_raw):
     assert games[0].home_team.team.name != ""
 
 
+def test_fetch_schedule_raises_api_error_on_invalid_json():
+    """Non-JSON responses (e.g. 502) raise ApiError with context."""
+    client = MlbClient()
+    with patch("mlb_score.client.urlopen") as mock_urlopen:
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: b"Not Found")
+        mock_urlopen.return_value.__exit__ = lambda s, *a: None
+        with pytest.raises(ApiError) as exc_info:
+            client.fetch_schedule("2026-04-21")
+        assert "2026-04-21" in str(exc_info.value)
+
+
+def test_fetch_schedule_handles_null_dates_entry():
+    """If dates[0] is None, return empty list instead of crashing."""
+    client = MlbClient()
+    with patch("mlb_score.client.urlopen") as mock_urlopen:
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: b'{"dates": [null]}')
+        mock_urlopen.return_value.__exit__ = lambda s, *a: None
+        games = client.fetch_schedule("2026-04-21")
+    assert games == []
+
+
 @pytest.fixture
 def schedule_raw():
     return load_fixture("schedule_2026-04-21.json")

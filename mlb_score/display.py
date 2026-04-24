@@ -41,7 +41,7 @@ def format_game(game: Game) -> str:
             label = _colorize("LOSS", BOLD, RED)
     elif game.state == GameState.LIVE:
         label = _colorize("LIVE", BOLD, YEL)
-    else:  # SCHEDULED
+    else:  # GameState.SCHEDULED
         label = _colorize("SCHEDULED", DIM)
 
     return (
