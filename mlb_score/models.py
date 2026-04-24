@@ -4,7 +4,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from enum import Enum
 from typing import Optional
+
+
+class GameState(str, Enum):
+    """The current state of a game."""
+
+    SCHEDULED = "SCHEDULED"
+    LIVE = "LIVE"
+    FINAL = "FINAL"
 
 
 @dataclass(frozen=True)
@@ -46,37 +55,45 @@ class Game:
 
     away_team: TeamScore
     home_team: TeamScore
+    state: GameState
     venue: str = ""
     day_night: str = ""
     game_date: Optional[date] = None
 
     @property
-    def winner(self) -> TeamInfo:
+    def winner(self) -> Optional[TeamInfo]:
+        if self.state != GameState.FINAL:
+            return None
         if self.away_team.is_winner:
             return self.away_team.team
         if self.home_team.is_winner:
             return self.home_team.team
-        return self.home_team.team  # fallback for unfinished games
+        return None
 
     @property
     def score_string(self) -> str:
-        """Score always shown winner-first."""
+        """Score for LIVE/FINAL games; 'vs' for scheduled games."""
+        if self.state == GameState.SCHEDULED:
+            return "vs"
+        if self.state == GameState.LIVE:
+            return f"{self.away_team.score}–{self.home_team.score}"
+        # FINAL — show winner-first
         if self.winner == self.away_team.team:
             return f"{self.away_team.score}–{self.home_team.score}"
         return f"{self.home_team.score}–{self.away_team.score}"
 
     @property
     def matchup_string(self) -> str:
-        """Matchup line with winner indicator."""
+        """Matchup line with winner indicator for final games."""
+        if self.state != GameState.FINAL:
+            return f"{self.away_team.team.name} @ {self.home_team.team.name}"
         if self.winner == self.away_team.team:
             return f"✅ {self.away_team.team.name} @ {self.home_team.team.name}"
         return f"❌ {self.home_team.team.name} @ {self.away_team.team.name}"
 
     @property
     def label(self) -> str:
-        if self.winner == self.away_team.team:
-            return "WIN"
-        return "LOSS"
+        return self.state.value
 
 
 @dataclass

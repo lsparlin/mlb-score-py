@@ -1,7 +1,7 @@
 """Tests for display formatting."""
 
 from mlb_score.display import format_game, print_no_results, print_results
-from mlb_score.models import Game, Schedule, TeamInfo, TeamScore
+from mlb_score.models import Game, GameState, Schedule, TeamInfo, TeamScore
 
 
 def _team(name: str) -> TeamInfo:
@@ -14,6 +14,7 @@ def test_format_game_contains_team_names():
         home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
         venue="Busch Stadium",
         day_night="Night",
+        state=GameState.FINAL,
     )
     result = format_game(game)
     assert "Cardinals" in result
@@ -26,6 +27,7 @@ def test_format_game_contains_score():
         home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
         venue="Busch Stadium",
         day_night="Night",
+        state=GameState.FINAL,
     )
     result = format_game(game)
     assert "5\u20133" in result
@@ -37,6 +39,7 @@ def test_format_game_contains_venue():
         home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
         venue="Busch Stadium",
         day_night="Night",
+        state=GameState.FINAL,
     )
     result = format_game(game)
     assert "Busch Stadium" in result
@@ -48,6 +51,7 @@ def test_format_game_contains_label():
         home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
         venue="Busch Stadium",
         day_night="Night",
+        state=GameState.FINAL,
     )
     result = format_game(game)
     assert "WIN" in result
@@ -59,6 +63,7 @@ def test_print_results_outputs(capsys):
         home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
         venue="Busch Stadium",
         day_night="Night",
+        state=GameState.FINAL,
     )
     schedule = Schedule()
     from datetime import date
@@ -76,3 +81,31 @@ def test_print_no_results_outputs(capsys):
     print_no_results("Pirates", date(2026, 4, 21))
     captured = capsys.readouterr()
     assert "No games found" in captured.out
+
+
+def test_format_game_scheduled():
+    game = Game(
+        away_team=TeamScore(team=_team("Cardinals"), score=0, is_winner=None),
+        home_team=TeamScore(team=_team("Dodgers"), score=0, is_winner=None),
+        venue="Busch Stadium",
+        day_night="Night",
+        state=GameState.SCHEDULED,
+    )
+    result = format_game(game)
+    assert "vs" in result
+    assert "SCHEDULED" in result
+    assert "✅" not in result
+    assert "❌" not in result
+
+
+def test_format_game_live():
+    game = Game(
+        away_team=TeamScore(team=_team("Cardinals"), score=3, is_winner=None),
+        home_team=TeamScore(team=_team("Dodgers"), score=2, is_winner=None),
+        venue="Busch Stadium",
+        day_night="Night",
+        state=GameState.LIVE,
+    )
+    result = format_game(game)
+    assert "3–2" in result
+    assert "LIVE" in result

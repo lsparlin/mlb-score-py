@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from mlb_score.models import Game, Schedule, TeamInfo, TeamScore
+from mlb_score.models import Game, GameState, Schedule, TeamInfo, TeamScore
 from mlb_score.queries import build_schedule, find_team_games
 
 # --- Static fixture: pre-parsed Game objects for query tests ---
@@ -20,6 +20,7 @@ def _cardinals_vs_marlins():
         home_team=TeamScore(team=_marlins, score=3, is_winner=False, is_home=True),
         venue="loanDepot park",
         day_night="Night",
+        state=GameState.FINAL,
     )
 
 
@@ -30,6 +31,7 @@ def _astros_vs_guardians():
         home_team=TeamScore(team=_guardians, score=8, is_winner=True, is_home=True),
         venue="Progressive Field",
         day_night="Day",
+        state=GameState.FINAL,
     )
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from mlb_score.models import Game, Schedule
+from mlb_score.models import Game, GameState, Schedule
 
 # ANSI color codes (safe for all modern terminals)
 BOLD = "\033[1m"
@@ -13,6 +13,7 @@ CYN = "\033[36m"  # cyan
 GRN = "\033[32m"  # green
 RED = "\033[31m"  # red
 WHT = "\033[97m"  # bright white
+YEL = "\033[93m"  # yellow
 RST = "\033[0m"   # reset
 
 
@@ -26,17 +27,22 @@ def format_game(game: Game) -> str:
 
     Example output (with colors):
       ✅ St. Louis Cardinals @ Miami Marlins
-         5–3  · loanDepot park  · Night  · WIN
+         5–3  · loanDepot park  · Night  · FINAL
     """
     # Score in bright white, venue/night in dim
     score = _colorize(game.score_string, BOLD, WHT)
     venue = _colorize(f"{game.venue}  ·  {game.day_night.title()}", DIM)
 
-    # WIN in green, LOSS in red
-    if game.label == "WIN":
-        label = _colorize(game.label, BOLD, GRN)
-    else:
-        label = _colorize(game.label, BOLD, RED)
+    # Color the label based on game state
+    if game.state == GameState.FINAL:
+        if game.winner == game.away_team.team:
+            label = _colorize("WIN", BOLD, GRN)
+        else:
+            label = _colorize("LOSS", BOLD, RED)
+    elif game.state == GameState.LIVE:
+        label = _colorize("LIVE", BOLD, YEL)
+    else:  # SCHEDULED
+        label = _colorize("SCHEDULED", DIM)
 
     return (
         f"  {game.matchup_string}\n"

@@ -8,7 +8,7 @@ from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from mlb_score.models import Game, TeamInfo, TeamScore
+from mlb_score.models import Game, GameState, TeamInfo, TeamScore
 
 MLB_API = "https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}"
 
@@ -75,14 +75,28 @@ class MlbClient:
             games.append(self._parse_game(raw_game))
         return games
 
+    # Maps MLB API status.statusCode values to GameState.
+    # Reference: https://statsapi.mlb.com/api/doc
+    _STATUS_CODE_MAP: dict[str, GameState] = {
+        "F": GameState.FINAL,
+        "I": GameState.LIVE,
+        "P": GameState.SCHEDULED,
+        "W": GameState.SCHEDULED,  # walkup / warmup
+        "S": GameState.SCHEDULED,  # scheduled (delayed)
+    }
+
     def _parse_game(self, raw: dict[str, Any]) -> Game:
         """Convert a raw API game object into a structured Game model."""
         teams = raw.get("teams", {})
+        status = raw.get("status", {})
+        code = status.get("statusCode", "F")
+        state = self._STATUS_CODE_MAP.get(code, GameState.SCHEDULED)
         return Game(
             away_team=self._parse_team(teams, "away"),
             home_team=self._parse_team(teams, "home"),
             venue=raw.get("venue", {}).get("name", ""),
             day_night=raw.get("dayNight", ""),
+            state=state,
         )
 
     def _parse_team(self, teams: dict[str, Any], side: str) -> TeamScore:
