@@ -2,85 +2,82 @@
 
 from datetime import date
 
-import pytest
+from mlb_score.models import Game, Schedule, TeamInfo, TeamScore
+from mlb_score.queries import build_schedule, find_team_games
 
-from mlb_score.models import Game, Schedule
-from mlb_score.queries import build_schedule, find_team_games, parse_game
-from tests.conftest import load_fixture
+# --- Static fixture: pre-parsed Game objects for query tests ---
+# Kept static to decouple query tests from client internals.
+
+_cardinals = TeamInfo(name="St. Louis Cardinals", location="St. Louis")
+_marlins = TeamInfo(name="Miami Marlins", location="Miami")
+_astros = TeamInfo(name="Houston Astros", location="Houston")
+_guardians = TeamInfo(name="Cleveland Guardians", location="Cleveland")
+
+def _cardinals_vs_marlins():
+    """St. Louis Cardinals @ Miami Marlins — Cardinals won 5-3."""
+    return Game(
+        away_team=TeamScore(team=_cardinals, score=5, is_winner=True, is_home=False),
+        home_team=TeamScore(team=_marlins, score=3, is_winner=False, is_home=True),
+        venue="loanDepot park",
+        day_night="Night",
+    )
 
 
-@pytest.fixture
-def schedule_raw():
-    return load_fixture("schedule_2026-04-21.json")
+def _astros_vs_guardians():
+    """Houston Astros @ Cleveland Guardians — Guardians won 8-5."""
+    return Game(
+        away_team=TeamScore(team=_astros, score=5, is_winner=False, is_home=False),
+        home_team=TeamScore(team=_guardians, score=8, is_winner=True, is_home=True),
+        venue="Progressive Field",
+        day_night="Day",
+    )
 
 
 # --- find_team_games ---
 
 
-def test_find_team_games_returns_match(schedule_raw):
-    games = find_team_games(schedule_raw, "Cardinals")
-    # Cardinals played on 2026-04-21
-    assert len(games) >= 1
-    first_game = games[0]
+def test_find_team_games_returns_match():
+    games = [_cardinals_vs_marlins(), _astros_vs_guardians()]
+    matches = find_team_games(games, "Cardinals")
+    assert len(matches) == 1
+    first_game = matches[0]
     away_name = first_game.away_team.team.name.lower()
     home_name = first_game.home_team.team.name.lower()
     assert "cardinals" in away_name or "cardinals" in home_name
 
 
-def test_find_team_games_no_match(schedule_raw):
+def test_find_team_games_no_match():
     """A team not playing that day returns empty list."""
-    games = find_team_games(schedule_raw, "Pirates")
-    # Pirates may or may not have played; use a name guaranteed absent
-    games = find_team_games(schedule_raw, "ZZZNonexistentTeam")
-    assert games == []
+    games = [_cardinals_vs_marlins(), _astros_vs_guardians()]
+    matches = find_team_games(games, "ZZZNonexistentTeam")
+    assert matches == []
 
 
-def test_find_team_games_case_insensitive(schedule_raw):
-    upper = find_team_games(schedule_raw, "CARDINALS")
-    lower = find_team_games(schedule_raw, "cardinals")
-    mixed = find_team_games(schedule_raw, "Cardinals")
+def test_find_team_games_case_insensitive():
+    games = [_cardinals_vs_marlins(), _astros_vs_guardians()]
+    upper = find_team_games(games, "CARDINALS")
+    lower = find_team_games(games, "cardinals")
+    mixed = find_team_games(games, "Cardinals")
     assert len(upper) == len(lower) == len(mixed)
-
-
-# --- parse_game ---
-
-
-def test_parse_game_produces_model(schedule_raw):
-    raw_games = schedule_raw["dates"][0]["games"]
-    game = parse_game(raw_games[0])
-    assert isinstance(game, Game)
-    assert game.away_team.team.name != ""
-    assert game.home_team.team.name != ""
-
-
-def test_parse_game_scores(schedule_raw):
-    raw_games = schedule_raw["dates"][0]["games"]
-    game = parse_game(raw_games[0])
-    # Scores should be integers (not None)
-    assert isinstance(game.away_team.score, int)
-    assert isinstance(game.home_team.score, int)
 
 
 # --- build_schedule ---
 
 
 def test_build_schedule_returns_schedule():
-    raw = load_fixture("schedule_2026-04-21.json")
-    fetched = [(date(2026, 4, 21), raw)]
-    schedule = build_schedule(fetched, "Cardinals")
+    games_by_date: dict[date, list[Game]] = {}
+    schedule = build_schedule(games_by_date, "Cardinals")
     assert isinstance(schedule, Schedule)
 
 
 def test_build_schedule_empty_when_no_match():
-    raw = load_fixture("schedule_2026-04-21.json")
-    fetched = [(date(2026, 4, 21), raw)]
-    schedule = build_schedule(fetched, "ZZZNonexistentTeam")
+    games_by_date = {date(2026, 4, 21): [_cardinals_vs_marlins()]}
+    schedule = build_schedule(games_by_date, "ZZZNonexistentTeam")
     assert schedule.is_empty
 
 
 def test_build_schedule_populates_games_by_date():
-    raw = load_fixture("schedule_2026-04-21.json")
-    fetched = [(date(2026, 4, 21), raw)]
-    schedule = build_schedule(fetched, "Cardinals")
-    if not schedule.is_empty:
-        assert date(2026, 4, 21) in schedule.games_by_date
+    games_by_date = {date(2026, 4, 21): [_cardinals_vs_marlins()]}
+    schedule = build_schedule(games_by_date, "Cardinals")
+    assert not schedule.is_empty
+    assert date(2026, 4, 21) in schedule.games_by_date

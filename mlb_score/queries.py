@@ -1,80 +1,50 @@
-"""Query and filtering logic for MLB game data."""
+"""Query and filtering logic for MLB game data.
+
+Operates exclusively on typed models; all parsing is delegated to MlbClient.
+"""
 
 from __future__ import annotations
 
 from datetime import date
-from typing import Any
 
-from mlb_score.models import Game, Schedule, TeamInfo, TeamScore
-
-
-def _parse_team(raw_teams: dict[str, Any], side: str) -> TeamScore:
-    """Parse a team entry from raw API response into a TeamScore."""
-    team_raw = raw_teams.get(side, {}).get("team", {})
-    info = TeamInfo(
-        name=team_raw.get("name", ""),
-        abbreviation=team_raw.get("abbreviation", ""),
-    )
-    return TeamScore(
-        team=info,
-        score=raw_teams.get(side, {}).get("score", 0),
-        is_winner=raw_teams.get(side, {}).get("isWinner"),
-        is_home=(side == "home"),
-    )
+from mlb_score.models import Game, Schedule
 
 
-def parse_game(raw: dict[str, Any]) -> Game:
-    """Convert a raw API game object into a structured Game model."""
-    teams = raw.get("teams", {})
-    return Game(
-        away_team=_parse_team(teams, "away"),
-        home_team=_parse_team(teams, "home"),
-        venue=raw.get("venue", {}).get("name", ""),
-        day_night=raw.get("dayNight", ""),
-    )
-
-
-def find_team_games(raw_data: dict[str, Any], team_name: str) -> list[Game]:
-    """Find all games involving a team by name substring match.
+def find_team_games(games: list[Game], team_name: str) -> list[Game]:
+    """Filter a list of games to only those involving the given team.
 
     Args:
-        raw_data: Raw API response for a single date.
+        games: List of already-parsed Game objects.
         team_name: Team name (case-insensitive substring match).
 
     Returns:
-        List of parsed Game objects matching the team.
+        Filtered list of Game objects matching the team.
     """
     team_name_lower = team_name.lower()
-    matches: list[Game] = []
-
-    raw_games = raw_data.get("dates", [])[0].get("games", [])
-    for raw_game in raw_games:
-        teams = raw_game.get("teams", {})
-        away_name = teams.get("away", {}).get("team", {}).get("name", "").lower()
-        home_name = teams.get("home", {}).get("team", {}).get("name", "").lower()
-
-        if team_name_lower in away_name or team_name_lower in home_name:
-            matches.append(parse_game(raw_game))
-
-    return matches
+    return [
+        game
+        for game in games
+        if team_name_lower in game.away_team.team.name.lower()
+        or team_name_lower in game.home_team.team.name.lower()
+    ]
 
 
 def build_schedule(
-    fetched_data: list[tuple[date, dict[str, Any]]],
+    games_by_date: dict[date, list[Game]],
     team_name: str,
 ) -> Schedule:
-    """Build a filtered Schedule from raw API responses.
+    """Build a filtered Schedule from per-date game lists.
 
     Args:
-        fetched_data: List of (date, raw_api_response) tuples.
+        games_by_date: Dict mapping each date to its list of Game objects.
         team_name: Team name to filter by.
 
     Returns:
         Schedule containing only games involving the requested team.
     """
     schedule = Schedule()
-    for lookup_date, raw_data in fetched_data:
-        games = find_team_games(raw_data, team_name)
-        if games:
-            schedule.games_by_date[lookup_date] = games
+    for lookup_date, games in games_by_date.items():
+        team_games = find_team_games(games, team_name)
+        if team_games:
+            schedule.games_by_date[lookup_date] = team_games
     return schedule

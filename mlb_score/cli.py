@@ -6,7 +6,7 @@ import argparse
 import sys
 from datetime import date, timedelta
 
-from mlb_score.api import ApiError, fetch_date_range
+from mlb_score.client import ApiError, MlbClient
 from mlb_score.display import print_no_results, print_results
 from mlb_score.queries import build_schedule
 
@@ -55,12 +55,13 @@ def main(argv: list[str] | None = None) -> int:
         label = ""
 
     try:
-        fetched_data = fetch_date_range(target_date, args.days)
+        client = MlbClient()
+        games_by_date = client.fetch_date_range(target_date, args.days)
     except ApiError as e:
         print(f"{e}", file=sys.stderr)
         return 1
 
-    schedule = build_schedule(fetched_data, args.team)
+    schedule = build_schedule(games_by_date, args.team)
 
     if schedule.is_empty:
         print_no_results(args.team, target_date)
