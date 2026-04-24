@@ -1,5 +1,7 @@
 # PRD: MLB Client Abstraction
 
+## Status: ✅ Implemented
+
 ## Goal
 Encapsulate the raw API interaction and data parsing into a unified client, removing "leaky abstractions" from the query and CLI layers.
 
