@@ -1,5 +1,7 @@
 # PRD: Game State Domain Model
 
+## Status: ✅ Implemented
+
 ## Goal
 Accurately represent the current state of a game (Scheduled, In Progress, Final) to avoid misleading results for future or ongoing games.
 
@@ -16,3 +18,16 @@ The `Game` model assumes games are completed. It calculates a `winner` by fallin
 
 ## Expected Outcome
 The tool will provide accurate information for games occurring today or in the future, eliminating the "False Loss" bug for upcoming matchups.
+
+## Implementation
+
+- `GameState(str, Enum)` with `SCHEDULED`, `LIVE`, `FINAL` — `str` base class for JSON compatibility
+- `Game.state` is a **required** field (no default) to force callers to be explicit about game state
+- `MlbClient._STATUS_CODE_MAP` maps MLB API `status.statusCode` values (`F`, `I`, `P`, `W`, `S`) → `GameState`
+- `Game.winner` returns `Optional[TeamInfo]` — `None` for non-FINAL games
+- `Game.label` returns `state.value` (`"SCHEDULED"`, `"LIVE"`, `"FINAL"`)
+- `Game.score_string` returns actual score for LIVE/FINAL, `"vs"` for SCHEDULED
+- `Game.matchup_string` drops ✅/❌ indicators for non-FINAL games
+- `format_game` renders: green WIN / red LOSS for FINAL, yellow LIVE, dim SCHEDULED
+- `GameState` exported in `__all__`
+- 5 new tests covering all three game states; all existing tests updated with explicit `state`
