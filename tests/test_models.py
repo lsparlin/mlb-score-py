@@ -10,14 +10,8 @@ def _team(name: str) -> TeamInfo:
 # --- TeamInfo ---
 
 
-def test_team_display_name_with_location():
-    team = TeamInfo(name="Cardinals", location="St. Louis")
-    assert team.display_name == "St. Louis Cardinals"
-
-
-def test_team_display_name_no_location():
-    team = TeamInfo(name="Cardinals")
-    assert team.display_name == "Cardinals"
+def test_team_display_name():
+    assert TeamInfo(name="Cardinals").display_name == "Cardinals"
 
 
 # --- TeamScore ---

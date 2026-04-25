@@ -21,13 +21,10 @@ class TeamInfo:
     """Represents an MLB team from the API response."""
 
     name: str
-    location: str = ""
     abbreviation: str = ""
 
     @property
     def display_name(self) -> str:
-        if self.location:
-            return f"{self.location} {self.name}"
         return self.name
 
 
@@ -58,7 +55,6 @@ class Game:
     state: GameState
     venue: str = ""
     day_night: str = ""
-    game_date: Optional[date] = None
 
     @property
     def winner(self) -> Optional[TeamInfo]:

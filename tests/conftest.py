@@ -20,8 +20,8 @@ def load_fixture(name: str) -> dict:
 def cardinals_vs_marlins():
     """St. Louis Cardinals @ Miami Marlins — Cardinals won 5-3."""
     return Game(
-        away_team=TeamScore(team=TeamInfo(name="St. Louis Cardinals", location="St. Louis"), score=5, is_winner=True, is_home=False),
-        home_team=TeamScore(team=TeamInfo(name="Miami Marlins", location="Miami"), score=3, is_winner=False, is_home=True),
+        away_team=TeamScore(team=TeamInfo(name="St. Louis Cardinals"), score=5, is_winner=True, is_home=False),
+        home_team=TeamScore(team=TeamInfo(name="Miami Marlins"), score=3, is_winner=False, is_home=True),
         venue="loanDepot park",
         day_night="Night",
         state=GameState.FINAL,
@@ -32,8 +32,8 @@ def cardinals_vs_marlins():
 def astros_vs_guardians():
     """Houston Astros @ Cleveland Guardians — Guardians won 8-5."""
     return Game(
-        away_team=TeamScore(team=TeamInfo(name="Houston Astros", location="Houston"), score=5, is_winner=False, is_home=False),
-        home_team=TeamScore(team=TeamInfo(name="Cleveland Guardians", location="Cleveland"), score=8, is_winner=True, is_home=True),
+        away_team=TeamScore(team=TeamInfo(name="Houston Astros"), score=5, is_winner=False, is_home=False),
+        home_team=TeamScore(team=TeamInfo(name="Cleveland Guardians"), score=8, is_winner=True, is_home=True),
         venue="Progressive Field",
         day_night="Day",
         state=GameState.FINAL,
