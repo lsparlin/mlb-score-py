@@ -17,6 +17,19 @@ YEL = "\033[93m"  # yellow
 RST = "\033[0m"   # reset
 
 
+def date_label(today: bool, days: int, has_explicit_date: bool) -> str:
+    """Derive a human-readable label for the date range shown in the header."""
+    if has_explicit_date:
+        return ""
+    if today and days == 1:
+        return "Today"
+    if today:
+        return f"Today and prior {days - 1} days"
+    if days == 1:
+        return "Yesterday"
+    return f"Last {days} days"
+
+
 def _colorize(text: str, *codes: str) -> str:
     """Wrap text with ANSI color codes."""
     return f"{''.join(codes)}{text}{RST}"

@@ -1,83 +1,41 @@
 """Tests for display formatting."""
 
+from datetime import date
+
 from mlb_score.display import format_game, print_no_results, print_results
 from mlb_score.models import Game, GameState, Schedule, TeamInfo, TeamScore
 
 
-def _team(name: str) -> TeamInfo:
-    return TeamInfo(name=name)
-
-
-def test_format_game_contains_team_names():
-    game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=5, is_winner=True),
-        home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
-        venue="Busch Stadium",
-        day_night="Night",
-        state=GameState.FINAL,
-    )
-    result = format_game(game)
+def test_format_game_contains_team_names(cardinals_beat_dodgers):
+    result = format_game(cardinals_beat_dodgers)
     assert "Cardinals" in result
     assert "Dodgers" in result
 
 
-def test_format_game_contains_score():
-    game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=5, is_winner=True),
-        home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
-        venue="Busch Stadium",
-        day_night="Night",
-        state=GameState.FINAL,
-    )
-    result = format_game(game)
-    assert "5\u20133" in result
+def test_format_game_contains_score(cardinals_beat_dodgers):
+    result = format_game(cardinals_beat_dodgers)
+    assert "5–3" in result
 
 
-def test_format_game_contains_venue():
-    game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=5, is_winner=True),
-        home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
-        venue="Busch Stadium",
-        day_night="Night",
-        state=GameState.FINAL,
-    )
-    result = format_game(game)
+def test_format_game_contains_venue(cardinals_beat_dodgers):
+    result = format_game(cardinals_beat_dodgers)
     assert "Busch Stadium" in result
 
 
-def test_format_game_contains_label():
-    game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=5, is_winner=True),
-        home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
-        venue="Busch Stadium",
-        day_night="Night",
-        state=GameState.FINAL,
-    )
-    result = format_game(game)
+def test_format_game_contains_label(cardinals_beat_dodgers):
+    result = format_game(cardinals_beat_dodgers)
     assert "WIN" in result
 
 
-def test_print_results_outputs(capsys):
-    game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=5, is_winner=True),
-        home_team=TeamScore(team=_team("Dodgers"), score=3, is_winner=False),
-        venue="Busch Stadium",
-        day_night="Night",
-        state=GameState.FINAL,
-    )
+def test_print_results_outputs(cardinals_beat_dodgers, capsys):
     schedule = Schedule()
-    from datetime import date
-
-    schedule.games_by_date[date(2026, 4, 21)] = [game]
-
+    schedule.games_by_date[date(2026, 4, 21)] = [cardinals_beat_dodgers]
     print_results(schedule, date(2026, 4, 21), "Cardinals")
     captured = capsys.readouterr()
     assert "Cardinals" in captured.out
 
 
 def test_print_no_results_outputs(capsys):
-    from datetime import date
-
     print_no_results("Pirates", date(2026, 4, 21))
     captured = capsys.readouterr()
     assert "No games found" in captured.out
@@ -85,8 +43,8 @@ def test_print_no_results_outputs(capsys):
 
 def test_format_game_scheduled():
     game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=0, is_winner=None),
-        home_team=TeamScore(team=_team("Dodgers"), score=0, is_winner=None),
+        away_team=TeamScore(team=TeamInfo(name="Cardinals"), score=0, is_winner=None),
+        home_team=TeamScore(team=TeamInfo(name="Dodgers"), score=0, is_winner=None),
         venue="Busch Stadium",
         day_night="Night",
         state=GameState.SCHEDULED,
@@ -100,8 +58,8 @@ def test_format_game_scheduled():
 
 def test_format_game_live():
     game = Game(
-        away_team=TeamScore(team=_team("Cardinals"), score=3, is_winner=None),
-        home_team=TeamScore(team=_team("Dodgers"), score=2, is_winner=None),
+        away_team=TeamScore(team=TeamInfo(name="Cardinals"), score=3, is_winner=None),
+        home_team=TeamScore(team=TeamInfo(name="Dodgers"), score=2, is_winner=None),
         venue="Busch Stadium",
         day_night="Night",
         state=GameState.LIVE,

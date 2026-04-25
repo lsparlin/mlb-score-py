@@ -112,3 +112,21 @@ class Schedule:
     @property
     def is_empty(self) -> bool:
         return len(self.all_games) == 0
+
+    @classmethod
+    def for_team(
+        cls, games_by_date: dict[date, list[Game]], team_name: str
+    ) -> "Schedule":
+        """Build a Schedule containing only games matching the given team name."""
+        team_name_lower = team_name.lower()
+        schedule = cls()
+        for lookup_date, games in games_by_date.items():
+            team_games = [
+                game
+                for game in games
+                if team_name_lower in game.away_team.team.name.lower()
+                or team_name_lower in game.home_team.team.name.lower()
+            ]
+            if team_games:
+                schedule.games_by_date[lookup_date] = team_games
+        return schedule
