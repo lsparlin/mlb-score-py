@@ -16,6 +16,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Look up MLB game outcomes for a team.")
     parser.add_argument(
         "team",
+        nargs="?",
         help="Team name (e.g. 'Cardinals', 'Dodgers', 'Yankees')",
     )
     date_group = parser.add_mutually_exclusive_group()
@@ -38,7 +39,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=1,
         help="Number of days to look back (default: 1)",
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.team is None:
+        parser.print_help()
+        raise SystemExit(0)
+    return args
 
 
 def resolve_target_date(args: argparse.Namespace) -> date:
