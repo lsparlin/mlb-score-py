@@ -52,8 +52,6 @@ def test_format_game_scheduled():
     result = format_game(game)
     assert "vs" in result
     assert "SCHEDULED" in result
-    assert "✅" not in result
-    assert "❌" not in result
 
 
 def test_format_game_live():
@@ -69,16 +67,18 @@ def test_format_game_live():
     assert "LIVE" in result
 
 
-def test_format_game_final_away_wins_score_winner_first(cardinals_beat_dodgers):
+def test_format_game_final_score_follows_away_home_order(cardinals_beat_dodgers):
+    # Cardinals (away, winner) 5 – Dodgers (home) 3
     result = format_game(cardinals_beat_dodgers)
     assert "5–3" in result
     assert "3–5" not in result
 
 
-def test_format_game_final_home_wins_score_winner_first(astros_vs_guardians):
+def test_format_game_final_home_wins_score_follows_away_home_order(astros_vs_guardians):
+    # Astros (away) 5 – Guardians (home, winner) 8
     result = format_game(astros_vs_guardians)
-    assert "8–5" in result
-    assert "5–8" not in result
+    assert "5–8" in result
+    assert "8–5" not in result
 
 
 def test_format_game_live_score_uses_away_home_order():
@@ -108,12 +108,36 @@ def test_format_game_scheduled_shows_vs_no_winner_marks():
     assert "❌" not in result
 
 
-def test_format_game_final_away_wins_check_before_away_team(cardinals_beat_dodgers):
-    result = format_game(cardinals_beat_dodgers)
-    assert result.index("✅") < result.index("Cardinals")
+def test_format_game_win_loss_reflects_searched_team_home_loss():
+    """Cardinals (home) lost to Mariners (away) 11-9 — searching 'cardinals' should show LOSS."""
+    game = Game(
+        away_team=TeamScore(team=TeamInfo(name="Seattle Mariners"), score=11, is_winner=True),
+        home_team=TeamScore(team=TeamInfo(name="St. Louis Cardinals"), score=9, is_winner=False),
+        venue="Busch Stadium",
+        day_night="Day",
+        state=GameState.FINAL,
+    )
+    result = format_game(game, team="cardinals")
+    assert "LOSS" in result
+    assert "WIN" not in result
 
 
-def test_format_game_final_home_wins_shows_x_mark(astros_vs_guardians):
-    result = format_game(astros_vs_guardians)
-    assert "❌" in result
-    assert result.index("❌") < result.index("Guardians")
+def test_format_game_win_loss_reflects_searched_team_home_win(astros_vs_guardians):
+    """Guardians (home) beat Astros (away) — searching 'guardians' should show WIN."""
+    result = format_game(astros_vs_guardians, team="guardians")
+    assert "WIN" in result
+    assert "LOSS" not in result
+
+
+def test_format_game_win_loss_reflects_searched_team_away_win(cardinals_beat_dodgers):
+    """Cardinals (away) beat Dodgers — searching 'cardinals' should show WIN."""
+    result = format_game(cardinals_beat_dodgers, team="cardinals")
+    assert "WIN" in result
+    assert "LOSS" not in result
+
+
+def test_format_game_win_loss_reflects_searched_team_away_loss(astros_vs_guardians):
+    """Astros (away) lost to Guardians — searching 'astros' should show LOSS."""
+    result = format_game(astros_vs_guardians, team="astros")
+    assert "LOSS" in result
+    assert "WIN" not in result

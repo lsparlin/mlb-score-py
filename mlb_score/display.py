@@ -42,27 +42,29 @@ def _colorize(text: str, *codes: str) -> str:
 def _score_string(game: Game) -> str:
     if game.state == GameState.SCHEDULED:
         return "vs"
-    if game.state == GameState.LIVE:
-        return f"{game.away_team.score}–{game.home_team.score}"
-    if game.winner == game.away_team.team:
-        return f"{game.away_team.score}–{game.home_team.score}"
-    return f"{game.home_team.score}–{game.away_team.score}"
+    return f"{game.away_team.score}–{game.home_team.score}"
+
+
+def _searched_team_won(game: Game, team: str) -> bool:
+    team_lower = team.lower()
+    searched_is_away = team_lower in game.away_team.team.name.lower()
+    return (
+        searched_is_away and game.winner == game.away_team.team
+    ) or (
+        not searched_is_away and game.winner == game.home_team.team
+    )
 
 
 def _matchup_string(game: Game) -> str:
-    if game.state != GameState.FINAL:
-        return f"{game.away_team.team.name} @ {game.home_team.team.name}"
-    if game.winner == game.away_team.team:
-        return f"✅ {game.away_team.team.name} @ {game.home_team.team.name}"
-    return f"❌ {game.home_team.team.name} @ {game.away_team.team.name}"
+    return f"{game.away_team.team.name} @ {game.home_team.team.name}"
 
 
-def format_game(game: Game) -> str:
+def format_game(game: Game, team: str = "") -> str:
     """Format a single game as a display string.
 
     Example output (with colors):
-      ✅ St. Louis Cardinals @ Miami Marlins
-         5–3  · loanDepot park  · Night  · FINAL
+      St. Louis Cardinals @ Miami Marlins
+         5–3  · loanDepot park  · Night  · WIN
     """
     # Score in bright white, venue/night in dim
     score = _colorize(_score_string(game), BOLD, WHT)
@@ -70,7 +72,7 @@ def format_game(game: Game) -> str:
 
     # Color the label based on game state
     if game.state == GameState.FINAL:
-        if game.winner == game.away_team.team:
+        if _searched_team_won(game, team):
             label = _colorize("WIN", BOLD, GRN)
         else:
             label = _colorize("LOSS", BOLD, RED)
@@ -116,7 +118,7 @@ def print_results(schedule: Schedule, target_date: date, team: str, *, label: st
             print()
 
         for game in games:
-            print(format_game(game))
+            print(format_game(game, team))
             print()
 
 

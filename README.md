@@ -37,8 +37,8 @@ mlb-score Dodgers -n 3                 # last 3 days
 ⚾  Cardinals · Yesterday
 ────────────────────────────────────────────────
 
-  ✅ Seattle Mariners @ St. Louis Cardinals
-     3–2  · Busch Stadium  ·  Night  · WIN
+  Seattle Mariners @ St. Louis Cardinals
+     3–11  · Busch Stadium  ·  Night  · WIN
 ```
 
 ## Development
