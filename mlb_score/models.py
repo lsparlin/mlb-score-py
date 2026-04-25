@@ -66,31 +66,6 @@ class Game:
             return self.home_team.team
         return None
 
-    @property
-    def score_string(self) -> str:
-        """Score for LIVE/FINAL games; 'vs' for scheduled games."""
-        if self.state == GameState.SCHEDULED:
-            return "vs"
-        if self.state == GameState.LIVE:
-            return f"{self.away_team.score}–{self.home_team.score}"
-        # FINAL — show winner-first
-        if self.winner == self.away_team.team:
-            return f"{self.away_team.score}–{self.home_team.score}"
-        return f"{self.home_team.score}–{self.away_team.score}"
-
-    @property
-    def matchup_string(self) -> str:
-        """Matchup line with winner indicator for final games."""
-        if self.state != GameState.FINAL:
-            return f"{self.away_team.team.name} @ {self.home_team.team.name}"
-        if self.winner == self.away_team.team:
-            return f"✅ {self.away_team.team.name} @ {self.home_team.team.name}"
-        return f"❌ {self.home_team.team.name} @ {self.away_team.team.name}"
-
-    @property
-    def label(self) -> str:
-        return self.state.value
-
 
 @dataclass
 class Schedule:

@@ -35,6 +35,24 @@ def _colorize(text: str, *codes: str) -> str:
     return f"{''.join(codes)}{text}{RST}"
 
 
+def _score_string(game: Game) -> str:
+    if game.state == GameState.SCHEDULED:
+        return "vs"
+    if game.state == GameState.LIVE:
+        return f"{game.away_team.score}–{game.home_team.score}"
+    if game.winner == game.away_team.team:
+        return f"{game.away_team.score}–{game.home_team.score}"
+    return f"{game.home_team.score}–{game.away_team.score}"
+
+
+def _matchup_string(game: Game) -> str:
+    if game.state != GameState.FINAL:
+        return f"{game.away_team.team.name} @ {game.home_team.team.name}"
+    if game.winner == game.away_team.team:
+        return f"✅ {game.away_team.team.name} @ {game.home_team.team.name}"
+    return f"❌ {game.home_team.team.name} @ {game.away_team.team.name}"
+
+
 def format_game(game: Game) -> str:
     """Format a single game as a display string.
 
@@ -43,7 +61,7 @@ def format_game(game: Game) -> str:
          5–3  · loanDepot park  · Night  · FINAL
     """
     # Score in bright white, venue/night in dim
-    score = _colorize(game.score_string, BOLD, WHT)
+    score = _colorize(_score_string(game), BOLD, WHT)
     venue = _colorize(f"{game.venue}  ·  {game.day_night.title()}", DIM)
 
     # Color the label based on game state
@@ -58,7 +76,7 @@ def format_game(game: Game) -> str:
         label = _colorize("SCHEDULED", DIM)
 
     return (
-        f"  {game.matchup_string}\n"
+        f"  {_matchup_string(game)}\n"
         f"     {score}  · {venue}  · {label}"
     )
 

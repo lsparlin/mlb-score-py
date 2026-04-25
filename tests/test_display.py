@@ -67,3 +67,53 @@ def test_format_game_live():
     result = format_game(game)
     assert "3–2" in result
     assert "LIVE" in result
+
+
+def test_format_game_final_away_wins_score_winner_first(cardinals_beat_dodgers):
+    result = format_game(cardinals_beat_dodgers)
+    assert "5–3" in result
+    assert "3–5" not in result
+
+
+def test_format_game_final_home_wins_score_winner_first(astros_vs_guardians):
+    result = format_game(astros_vs_guardians)
+    assert "8–5" in result
+    assert "5–8" not in result
+
+
+def test_format_game_live_score_uses_away_home_order():
+    game = Game(
+        away_team=TeamScore(team=TeamInfo(name="Cardinals"), score=3, is_winner=None),
+        home_team=TeamScore(team=TeamInfo(name="Dodgers"), score=7, is_winner=None),
+        venue="Dodger Stadium",
+        day_night="Night",
+        state=GameState.LIVE,
+    )
+    result = format_game(game)
+    assert "3–7" in result
+    assert "7–3" not in result
+
+
+def test_format_game_scheduled_shows_vs_no_winner_marks():
+    game = Game(
+        away_team=TeamScore(team=TeamInfo(name="Cardinals"), score=0, is_winner=None),
+        home_team=TeamScore(team=TeamInfo(name="Dodgers"), score=0, is_winner=None),
+        venue="Busch Stadium",
+        day_night="Night",
+        state=GameState.SCHEDULED,
+    )
+    result = format_game(game)
+    assert "vs" in result
+    assert "✅" not in result
+    assert "❌" not in result
+
+
+def test_format_game_final_away_wins_check_before_away_team(cardinals_beat_dodgers):
+    result = format_game(cardinals_beat_dodgers)
+    assert result.index("✅") < result.index("Cardinals")
+
+
+def test_format_game_final_home_wins_shows_x_mark(astros_vs_guardians):
+    result = format_game(astros_vs_guardians)
+    assert "❌" in result
+    assert result.index("❌") < result.index("Guardians")
