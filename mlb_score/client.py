@@ -1,4 +1,8 @@
-"""MLB Stats API client."""
+"""HTTP transport for the MLB Stats API. Owns network errors and date-range iteration.
+
+JSON-to-model parsing is delegated entirely to parser.py; this module has no knowledge
+of the API response schema.
+"""
 
 from __future__ import annotations
 

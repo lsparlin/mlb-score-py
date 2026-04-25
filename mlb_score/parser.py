@@ -1,4 +1,9 @@
-"""Parses raw MLB Stats API JSON into typed models."""
+"""Parses raw MLB Stats API JSON into typed models.
+
+All .get() calls use empty-string or zero defaults intentionally: the API returns partial
+data for scheduled and live games (no scores, no winner). Raising on missing fields would
+break valid real-world responses.
+"""
 
 from __future__ import annotations
 

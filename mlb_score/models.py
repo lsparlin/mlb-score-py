@@ -1,4 +1,8 @@
-"""Data models for MLB games, teams, and schedules."""
+"""Pure data models for MLB games, teams, and schedules. No parsing or display logic.
+
+Game.winner returns None for non-FINAL games by design — callers (display.py) always
+check game.state before consulting winner.
+"""
 
 from __future__ import annotations
 

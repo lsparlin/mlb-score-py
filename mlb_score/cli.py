@@ -1,4 +1,7 @@
-"""CLI entry point for mlb-score."""
+"""CLI argument parsing and orchestration. Owns argument resolution and exit codes only.
+
+Display decisions (including date range labelling) belong in display.py, not here.
+"""
 
 from __future__ import annotations
 

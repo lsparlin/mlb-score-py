@@ -1,4 +1,8 @@
-"""Display formatting for MLB game results."""
+"""All rendering decisions for MLB game results — ANSI formatting, layout, and date labels.
+
+date_label() lives here (not in cli.py) because labelling the date range is a rendering
+decision about what appears in the header, not an orchestration decision about what was queried.
+"""
 
 from __future__ import annotations
 
