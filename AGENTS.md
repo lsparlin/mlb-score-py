@@ -7,20 +7,21 @@ CLI tool to look up MLB game outcomes for a given team, using MLB's public stats
 ## Quick reference
 
 ```bash
-mlb-score <team> [-d YYYY-MM-DD] [-n <days>]
+mlb-score <team> [-d YYYY-MM-DD] [--today] [-n <days>]
 ```
 
 - `<team>` — team name (e.g. `Cardinals`, `Dodgers`, `Yankees`)
-- `-d` — specific date (defaults to yesterday, shows "Yesterday" label)
-- `-n` — number of days to look back (default: 1, shows "Last N days")
+- `-d` — specific date (defaults to yesterday)
+- `--today` — use today's date (mutually exclusive with `-d`)
+- `-n` — number of days to look back (default: 1)
 
 ## Module structure
 
 ```
 mlb_score/
-├── __init__.py      # public API surface (fetch_schedule, Game, TeamInfo, etc.)
-├── api.py           # MLB Stats API client (function-based, no class wrapper)
-├── models.py        # Game, TeamInfo, TeamScore, Schedule dataclasses
+├── __init__.py      # public API surface (MlbClient, Game, GameState, TeamInfo, etc.)
+├── client.py        # MLB Stats API client (MlbClient class, fetch_schedule, fetch_date_range)
+├── models.py        # Game, TeamInfo, TeamScore, GameState dataclasses/enums
 ├── queries.py       # filtering and parsing logic
 ├── display.py       # ANSI color formatting and printing
 └── cli.py           # argument parsing + entry point (returns exit code)
@@ -30,7 +31,7 @@ mlb_score/
 
 - Uses `https://statsapi.mlb.com/api/v1/schedule` — no API key needed
 - Python 3.9+, stdlib only (no runtime dependencies)
-- Function-based API (`fetch_schedule`, `fetch_date_range`) — no class wrapper
+- API exposed via `MlbClient` class (`fetch_schedule`, `fetch_date_range`)
 - ANSI color output: cyan headers, green WIN/red LOSS, dimmed metadata
 - CLI entry point installed as `mlb-score` via `[project.scripts]`
 
@@ -38,7 +39,7 @@ mlb_score/
 
 ```bash
 uv sync              # install deps (pytest, ruff) in .venv
-uv run pytest -v     # 38 tests with real API fixtures
+uv run pytest -v     # run tests with real API fixtures
 uv run ruff check .  # linting
 uv run ruff format . # formatting
 ```

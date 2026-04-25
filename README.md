@@ -5,15 +5,10 @@ CLI tool and Python library to look up MLB game outcomes for a given team.
 ## Usage
 
 ```bash
-mlb-score Cardinals                    # yesterday's game (with "Yesterday" label)
+mlb-score Cardinals                    # yesterday's game
+mlb-score Cardinals --today            # today's games
 mlb-score Yankees -d 2026-04-15       # specific date
-mlb-score Dodgers -n 3                 # last 3 days (shows "Last 3 days")
-```
-
-Or via the script directly:
-
-```bash
-python3 mlb_score.py Cardinals
+mlb-score Dodgers -n 3                 # last 3 days
 ```
 
 ### Arguments
@@ -22,25 +17,27 @@ python3 mlb_score.py Cardinals
 |------|-------------|---------|
 | `team` | Team name (positional) | required |
 | `-d, --date` | Specific date (YYYY-MM-DD) | yesterday |
+| `--today` | Use today's date (mutually exclusive with `-d`) | — |
 | `-n, --days` | Number of days to look back | 1 |
 
 ### Output
 
 Colored terminal output with:
-- 📅 Date header in bold cyan
-- ⚾ Team name with context label ("Yesterday", "Last N days")
+- Date header in bold cyan
+- Team name with context label ("Yesterday", "Today", "Last N days")
 - Scores in bright white, venue/time dimmed
 - WIN in green, LOSS in red
 
 ## As a Library
 
 ```python
-from mlb_score.api import fetch_date_range
+from datetime import date, timedelta
+from mlb_score import MlbClient, find_team_games
 from mlb_score.queries import build_schedule
 from mlb_score.display import print_results
 
-# Fetch last 3 days for the Cardinals
-fetched = fetch_date_range(date.today() - timedelta(days=1), days=3)
+client = MlbClient()
+fetched = client.fetch_date_range(date.today() - timedelta(days=1), days=3)
 schedule = build_schedule(fetched, "Cardinals")
 print_results(schedule, date.today() - timedelta(days=1), "Cardinals")
 ```
@@ -49,8 +46,8 @@ print_results(schedule, date.today() - timedelta(days=1), "Cardinals")
 
 | Module | Responsibility |
 |--------|---------------|
-| `mlb_score.api` | MLB Stats API client (`fetch_schedule`, `fetch_date_range`) |
-| `mlb_score.models` | Data models (`Game`, `TeamInfo`, `TeamScore`, `Schedule`) |
+| `mlb_score.client` | MLB Stats API client (`MlbClient`, `fetch_schedule`, `fetch_date_range`) |
+| `mlb_score.models` | Data models (`Game`, `GameState`, `TeamInfo`, `TeamScore`) |
 | `mlb_score.queries` | Filtering and parsing (`find_team_games`, `build_schedule`) |
 | `mlb_score.display` | Formatting output with ANSI colors (`format_game`, `print_results`) |
 | `mlb_score.cli` | CLI argument parsing and entry point |
@@ -74,7 +71,7 @@ uv run ruff format .
 | Tool | Purpose |
 |------|---------|
 | [hatchling](https://github.com/pypa/hatch) | Build backend |
-| [pytest](https://pytest.org/) | Testing (38 tests, fixtures from real API responses) |
+| [pytest](https://pytest.org/) | Testing (fixtures from real MLB API responses) |
 | [ruff](https://docs.astral.sh/ruff/) | Linting and formatting |
 | [uv](https://docs.astral.sh/uv/) | Dependency management |
 

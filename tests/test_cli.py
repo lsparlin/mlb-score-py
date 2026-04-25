@@ -29,6 +29,18 @@ def test_parse_args_with_days():
     assert args.days == 5
 
 
+def test_parse_args_with_today():
+    args = parse_args(["Cardinals", "--today"])
+    assert args.today is True
+    assert args.date is None
+
+
+def test_parse_args_today_and_date_are_mutually_exclusive():
+    import pytest
+    with pytest.raises(SystemExit):
+        parse_args(["Cardinals", "--today", "-d", "2026-04-25"])
+
+
 # --- main() happy path ---
 
 
@@ -111,6 +123,20 @@ def test_main_returns_one_on_api_error(capsys):
     captured = capsys.readouterr()
     # Error goes to stderr
     assert "network failure" in captured.err
+
+
+# --- main() --today flag ---
+
+
+def test_main_with_today_uses_current_date():
+    with patch("mlb_score.cli.MlbClient") as MockClient:
+        mock_client = MockClient.return_value
+        mock_client.fetch_date_range.return_value = {}
+        main(["Cardinals", "--today"])
+
+    call_args = mock_client.fetch_date_range.call_args
+    target_date = call_args[0][0]
+    assert target_date == date.today()
 
 
 # --- main() uses yesterday by default ---

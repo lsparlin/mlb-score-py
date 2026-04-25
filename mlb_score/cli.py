@@ -18,11 +18,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "team",
         help="Team name (e.g. 'Cardinals', 'Dodgers', 'Yankees')",
     )
-    parser.add_argument(
+    date_group = parser.add_mutually_exclusive_group()
+    date_group.add_argument(
         "-d",
         "--date",
         help="Date to look up (YYYY-MM-DD), defaults to yesterday",
         default=None,
+    )
+    date_group.add_argument(
+        "--today",
+        action="store_true",
+        default=False,
+        help="Look up today's games instead of yesterday's",
     )
     parser.add_argument(
         "-n",
@@ -43,6 +50,8 @@ def resolve_target_date(args: argparse.Namespace) -> date:
             raise UserError(
                 f"Invalid date format '{args.date}'. Use YYYY-MM-DD."
             )
+    if args.today:
+        return date.today()
     return date.today() - timedelta(days=1)
 
 
@@ -51,7 +60,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
 
     # Build a human-readable label for the date range
-    if args.date is None and args.days == 1:
+    if args.today and args.days == 1:
+        label = "Today"
+    elif args.today:
+        label = f"Today and prior {args.days - 1} days"
+    elif args.date is None and args.days == 1:
         label = "Yesterday"
     elif args.date is None:
         label = f"Last {args.days} days"
