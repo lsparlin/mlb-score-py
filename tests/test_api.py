@@ -1,4 +1,4 @@
-"""Tests for MlbClient error handling and fetching."""
+"""Tests for MlbClient error handling and fetching, and parser logic."""
 
 from datetime import date
 from unittest.mock import MagicMock, patch
@@ -6,7 +6,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from mlb_score.client import ApiError, MlbClient
-from mlb_score.models import Game
+from mlb_score.models import Game, GameState
+from mlb_score.parser import parse_game, parse_games, parse_team
 from tests.conftest import load_fixture
 
 
@@ -129,3 +130,55 @@ def test_fetch_schedule_handles_null_dates_entry():
 @pytest.fixture
 def schedule_raw():
     return load_fixture("schedule_2026-04-21.json")
+
+
+# --- parser ---
+
+_TEAMS = {
+    "away": {"team": {"name": "Cardinals", "abbreviation": "STL"}, "score": 5, "isWinner": True},
+    "home": {"team": {"name": "Dodgers", "abbreviation": "LAD"}, "score": 3, "isWinner": False},
+}
+
+
+def test_parse_games_empty_response():
+    assert parse_games({}) == []
+    assert parse_games({"dates": []}) == []
+
+
+def test_parse_games_null_date_entry():
+    assert parse_games({"dates": [None]}) == []
+
+
+def test_parse_games_from_fixture():
+    raw = load_fixture("schedule_2026-04-21.json")
+    games = parse_games(raw)
+    assert len(games) > 0
+    assert all(isinstance(g, Game) for g in games)
+    assert all(g.away_team.team.name != "" for g in games)
+
+
+def test_parse_game_final():
+    raw = {"teams": _TEAMS, "status": {"statusCode": "F"}, "venue": {"name": "Busch Stadium"}, "dayNight": "Night"}
+    game = parse_game(raw)
+    assert game.state == GameState.FINAL
+    assert game.away_team.team.name == "Cardinals"
+    assert game.away_team.is_winner is True
+    assert game.home_team.score == 3
+    assert game.venue == "Busch Stadium"
+
+
+def test_parse_game_live():
+    raw = {"teams": _TEAMS, "status": {"statusCode": "I"}, "venue": {"name": "Busch Stadium"}, "dayNight": "Day"}
+    assert parse_game(raw).state == GameState.LIVE
+
+
+def test_parse_game_unknown_status_defaults_to_scheduled():
+    raw = {"teams": _TEAMS, "status": {"statusCode": "X"}, "venue": {"name": "Busch Stadium"}, "dayNight": "Night"}
+    assert parse_game(raw).state == GameState.SCHEDULED
+
+
+def test_parse_team_is_home_flag():
+    away = parse_team(_TEAMS, "away")
+    home = parse_team(_TEAMS, "home")
+    assert away.is_home is False
+    assert home.is_home is True
