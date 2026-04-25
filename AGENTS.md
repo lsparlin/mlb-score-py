@@ -7,7 +7,7 @@ CLI tool to look up MLB game outcomes for a given team, using MLB's public stats
 ## Quick reference
 
 ```bash
-mlb-score <team> [-d YYYY-MM-DD] [--today] [-n <days>]
+uv run mlb-score <team> [-d YYYY-MM-DD] [--today] [-n <days>]
 ```
 
 - `<team>` — team name (e.g. `Cardinals`, `Dodgers`, `Yankees`)
@@ -55,4 +55,4 @@ uv run ruff format . # formatting
 
 ## When asked about MLB scores
 
-Run `mlb-score <team>` directly — no need to read the source code.
+Run `uv run mlb-score <team>` — no need to read the source code.

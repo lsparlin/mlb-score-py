@@ -2,13 +2,21 @@
 
 CLI tool and Python library to look up MLB game outcomes for a given team.
 
+## Installing the CLI locally
+
+```bash
+uv tool install --editable .
+```
+
+After this, `mlb-score` is available on your PATH from anywhere — no `uv run` needed.
+
 ## Usage
 
 ```bash
-mlb-score Cardinals                    # yesterday's game
-mlb-score Cardinals --today            # today's games
-mlb-score Yankees -d 2026-04-15       # specific date
-mlb-score Dodgers -n 3                 # last 3 days
+uv run mlb-score Cardinals                    # yesterday's game
+uv run mlb-score Cardinals --today            # today's games
+uv run mlb-score Yankees -d 2026-04-15       # specific date
+uv run mlb-score Dodgers -n 3                 # last 3 days
 ```
 
 ### Arguments
