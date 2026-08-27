@@ -55,9 +55,7 @@ def resolve_target_date(args: argparse.Namespace) -> date:
         try:
             return date.fromisoformat(args.date)
         except ValueError:
-            raise UserError(
-                f"Invalid date format '{args.date}'. Use YYYY-MM-DD."
-            )
+            raise UserError(f"Invalid date format '{args.date}'. Use YYYY-MM-DD.")
     if args.today:
         return date.today()
     return date.today() - timedelta(days=1)

@@ -37,6 +37,7 @@ def test_parse_args_with_today():
 
 def test_parse_args_today_and_date_are_mutually_exclusive():
     import pytest
+
     with pytest.raises(SystemExit):
         parse_args(["Cardinals", "--today", "-d", "2026-04-25"])
 
@@ -54,13 +55,17 @@ def test_main_returns_zero_on_success(capsys):
 
         client = MlbClient()
         with patch("mlb_score.client.urlopen") as mock_urlopen:
-            mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: json.dumps(raw).encode())
+            mock_urlopen.return_value.__enter__ = lambda s: MagicMock(
+                read=lambda: json.dumps(raw).encode()
+            )
             mock_urlopen.return_value.__exit__ = lambda s, *a: None
             return client.fetch_schedule(date_str)
 
-    with patch("mlb_score.cli.MlbClient") as MockClient:
-        mock_client = MockClient.return_value
-        mock_client.fetch_date_range.return_value = {date(2026, 4, 21): fake_fetch_schedule("2026-04-21")}
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client = mock_client_cls.return_value
+        mock_client.fetch_date_range.return_value = {
+            date(2026, 4, 21): fake_fetch_schedule("2026-04-21")
+        }
         code = main(["Cardinals", "-d", "2026-04-21"])
 
     assert code == 0
@@ -78,15 +83,17 @@ def test_main_returns_zero_with_multiple_days(capsys):
 
         client = MlbClient()
         with patch("mlb_score.client.urlopen") as mock_urlopen:
-            mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: json.dumps(raw).encode())
+            mock_urlopen.return_value.__enter__ = lambda s: MagicMock(
+                read=lambda: json.dumps(raw).encode()
+            )
             mock_urlopen.return_value.__exit__ = lambda s, *a: None
             return client.fetch_schedule(date_str)
 
     games_21 = fake_fetch("2026-04-21")
     games_20: list[Game] = []
 
-    with patch("mlb_score.cli.MlbClient") as MockClient:
-        mock_client = MockClient.return_value
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client = mock_client_cls.return_value
         mock_client.fetch_date_range.return_value = {
             date(2026, 4, 21): games_21,
             date(2026, 4, 20): games_20,
@@ -100,8 +107,8 @@ def test_main_returns_zero_with_multiple_days(capsys):
 
 
 def test_main_returns_one_when_no_games(capsys):
-    with patch("mlb_score.cli.MlbClient") as MockClient:
-        mock_client = MockClient.return_value
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client = mock_client_cls.return_value
         mock_client.fetch_date_range.return_value = {}
         code = main(["Cardinals"])
 
@@ -114,8 +121,8 @@ def test_main_returns_one_when_no_games(capsys):
 
 
 def test_main_returns_one_on_api_error(capsys):
-    with patch("mlb_score.cli.MlbClient") as MockClient:
-        mock_client = MockClient.return_value
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client = mock_client_cls.return_value
         mock_client.fetch_date_range.side_effect = ApiError("network failure")
         code = main(["Cardinals"])
 
@@ -129,8 +136,8 @@ def test_main_returns_one_on_api_error(capsys):
 
 
 def test_main_with_today_uses_current_date():
-    with patch("mlb_score.cli.MlbClient") as MockClient:
-        mock_client = MockClient.return_value
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client = mock_client_cls.return_value
         mock_client.fetch_date_range.return_value = {}
         main(["Cardinals", "--today"])
 
@@ -156,7 +163,9 @@ def test_main_defaults_to_yesterday():
 
         client = MlbClient()
         with patch("mlb_score.client.urlopen") as mock_urlopen:
-            mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: json.dumps(raw).encode())
+            mock_urlopen.return_value.__enter__ = lambda s: MagicMock(
+                read=lambda: json.dumps(raw).encode()
+            )
             mock_urlopen.return_value.__exit__ = lambda s, *a: None
             result = {}
             for i in range(days):
@@ -166,8 +175,8 @@ def test_main_defaults_to_yesterday():
                     result[lookup_date] = games
             return result
 
-    with patch("mlb_score.cli.MlbClient") as MockClient:
-        mock_client = MockClient.return_value
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client = mock_client_cls.return_value
         mock_client.fetch_date_range.side_effect = fake_fetch
         main(["Cardinals"])
 
