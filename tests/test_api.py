@@ -1,5 +1,7 @@
 """Tests for MlbClient error handling and fetching, and parser logic."""
 
+import http.client
+import socket
 from datetime import date
 from unittest.mock import MagicMock, patch
 
@@ -201,3 +203,22 @@ def test_parse_team_is_home_flag():
     home = parse_team(_TEAMS, "home")
     assert away.is_home is False
     assert home.is_home is True
+
+
+def test_fetch_schedule_raises_api_error_on_socket_timeout():
+    """A raw socket timeout (OSError, not URLError) is wrapped as ApiError."""
+    client = MlbClient()
+    with patch("mlb_score.client.urlopen", side_effect=socket.timeout("timed out")):
+        with pytest.raises(ApiError) as exc_info:
+            client.fetch_schedule("2026-04-21")
+        assert "2026-04-21" in str(exc_info.value)
+
+
+def test_fetch_schedule_raises_api_error_on_connection_reset():
+    """A dropped connection mid-response is wrapped as ApiError, not a traceback."""
+    client = MlbClient()
+    error = http.client.RemoteDisconnected("Remote end closed connection")
+    with patch("mlb_score.client.urlopen", side_effect=error):
+        with pytest.raises(ApiError) as exc_info:
+            client.fetch_schedule("2026-04-21")
+        assert "2026-04-21" in str(exc_info.value)
