@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 from datetime import date, timedelta
 from typing import Any
-from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 from mlb_score.models import Game
@@ -65,7 +64,8 @@ class MlbClient:
         try:
             with urlopen(req, timeout=15) as resp:
                 return json.loads(resp.read().decode())
-        except URLError as e:
+        except OSError as e:
+            # URLError, socket timeouts, connection resets, TLS failures, etc.
             raise ApiError(f"Error fetching data for {date_str}: {e}") from e
         except json.JSONDecodeError as e:
             raise ApiError(f"Invalid response from MLB API for {date_str}: {e}") from e
