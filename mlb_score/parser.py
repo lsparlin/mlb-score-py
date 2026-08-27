@@ -7,6 +7,7 @@ break valid real-world responses.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from mlb_score.models import Game, GameState, TeamInfo, TeamScore
@@ -30,6 +31,24 @@ def parse_games(raw: dict[str, Any]) -> list[Game]:
     if not isinstance(first, dict):
         return []
     return [parse_game(raw_game) for raw_game in first.get("games", [])]
+
+
+def parse_games_by_date(raw: dict[str, Any]) -> dict[date, list[Game]]:
+    """Parse a (possibly multi-date) schedule response, grouped by date.
+
+    The MLB API returns one entry per date under `dates[]`; this maps each
+    entry's date to its list of Game models.
+    """
+    result: dict[date, list[Game]] = {}
+    for entry in raw.get("dates") or []:
+        if not isinstance(entry, dict):
+            continue
+        try:
+            lookup_date = date.fromisoformat(entry.get("date", ""))
+        except ValueError:
+            continue
+        result[lookup_date] = [parse_game(g) for g in entry.get("games", [])]
+    return result
 
 
 def parse_game(raw: dict[str, Any]) -> Game:
