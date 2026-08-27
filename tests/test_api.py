@@ -1,6 +1,7 @@
 """Tests for MlbClient error handling and fetching, and parser logic."""
 
 import http.client
+import json
 import socket
 from datetime import date
 from unittest.mock import MagicMock, patch
@@ -9,7 +10,7 @@ import pytest
 
 from mlb_score.client import ApiError, MlbClient
 from mlb_score.models import Game, GameState
-from mlb_score.parser import parse_game, parse_games, parse_team
+from mlb_score.parser import parse_game, parse_games, parse_games_by_date, parse_team
 from tests.conftest import load_fixture
 
 
@@ -46,21 +47,14 @@ def test_fetch_schedule_empty_dates_array_returns_empty_list():
     assert games == []
 
 
-def test_fetch_date_range_calls_correct_dates():
-    """fetch_date_range calls fetch_schedule for each date counting backward."""
-    call_log = []
-
-    def fake_fetch(date_str: str):
-        call_log.append(date_str)
-        return []  # no games
-
+def test_fetch_date_range_includes_all_queried_dates_even_when_api_returns_none():
+    """Every queried date appears in the result, even if the API omits it."""
     client = MlbClient()
-    with patch.object(client, "fetch_schedule", side_effect=fake_fetch):
+    with patch("mlb_score.client.urlopen") as mock_urlopen:
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: b'{"dates": []}')
+        mock_urlopen.return_value.__exit__ = lambda s, *a: None
         results = client.fetch_date_range(date(2026, 4, 21), days=3)
 
-    # Verify the API was called with ISO-formatted strings
-    assert call_log == ["2026-04-21", "2026-04-20", "2026-04-19"]
-    # All queried dates present, even with no games
     assert sorted(results.keys()) == [
         date(2026, 4, 19),
         date(2026, 4, 20),
@@ -73,7 +67,9 @@ def test_fetch_date_range_calls_correct_dates():
 def test_fetch_date_range_single_day():
     """Default days=1 returns only the target date."""
     client = MlbClient()
-    with patch.object(client, "fetch_schedule", return_value=[]):
+    with patch("mlb_score.client.urlopen") as mock_urlopen:
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: b'{"dates": []}')
+        mock_urlopen.return_value.__exit__ = lambda s, *a: None
         results = client.fetch_date_range(date(2026, 4, 21))
 
     assert len(results) == 1
@@ -221,4 +217,77 @@ def test_fetch_schedule_raises_api_error_on_connection_reset():
     with patch("mlb_score.client.urlopen", side_effect=error):
         with pytest.raises(ApiError) as exc_info:
             client.fetch_schedule("2026-04-21")
+        assert "2026-04-21" in str(exc_info.value)
+
+
+def test_parse_games_by_date_groups_multiple_dates():
+    """parse_games_by_date groups games from each dates[] entry under its date."""
+    raw = {
+        "dates": [
+            {
+                "date": "2026-04-19",
+                "games": [
+                    {
+                        "teams": _TEAMS,
+                        "status": {"statusCode": "F"},
+                        "venue": {"name": "Busch Stadium"},
+                        "dayNight": "Night",
+                    }
+                ],
+            },
+            {
+                "date": "2026-04-21",
+                "games": [
+                    {
+                        "teams": _TEAMS,
+                        "status": {"statusCode": "F"},
+                        "venue": {"name": "Busch Stadium"},
+                        "dayNight": "Night",
+                    },
+                    {
+                        "teams": _TEAMS,
+                        "status": {"statusCode": "F"},
+                        "venue": {"name": "Busch Stadium"},
+                        "dayNight": "Night",
+                    },
+                ],
+            },
+        ]
+    }
+    result = parse_games_by_date(raw)
+    assert set(result) == {date(2026, 4, 19), date(2026, 4, 21)}
+    assert len(result[date(2026, 4, 19)]) == 1
+    assert len(result[date(2026, 4, 21)]) == 2
+    assert all(isinstance(g, Game) for games in result.values() for g in games)
+
+
+def test_fetch_date_range_uses_single_api_call():
+    """fetch_date_range makes exactly one API request covering the full range."""
+    raw = load_fixture("schedule_2026-04-21.json")
+    client = MlbClient()
+    with patch("mlb_score.client.urlopen") as mock_urlopen:
+        body = json.dumps(raw).encode()
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: body)
+        mock_urlopen.return_value.__exit__ = lambda s, *a: None
+        results = client.fetch_date_range(date(2026, 4, 21), days=3)
+
+    assert mock_urlopen.call_count == 1
+    url = mock_urlopen.call_args.args[0].full_url
+    assert "startDate=2026-04-19" in url
+    assert "endDate=2026-04-21" in url
+    # All three queried dates present in the result
+    assert sorted(results.keys()) == [date(2026, 4, 19), date(2026, 4, 20), date(2026, 4, 21)]
+    # Games for 04-21 come from the fixture
+    assert len(results[date(2026, 4, 21)]) > 0
+
+
+def test_fetch_date_range_raises_api_error_on_network_failure():
+    """Network failures during a range fetch raise ApiError mentioning both dates."""
+    from urllib.error import URLError
+
+    client = MlbClient()
+    with patch("mlb_score.client.urlopen", side_effect=URLError("connection refused")):
+        with pytest.raises(ApiError) as exc_info:
+            client.fetch_date_range(date(2026, 4, 21), days=3)
+        assert "2026-04-19" in str(exc_info.value)
         assert "2026-04-21" in str(exc_info.value)
