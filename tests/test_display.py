@@ -1,6 +1,7 @@
 """Tests for display formatting."""
 
 from datetime import date
+from unittest.mock import Mock, patch
 
 from mlb_score.display import format_game, print_no_results, print_results
 from mlb_score.models import Game, GameState, Schedule, TeamInfo, TeamScore
@@ -141,3 +142,32 @@ def test_format_game_win_loss_reflects_searched_team_away_loss(astros_vs_guardia
     result = format_game(astros_vs_guardians, team="astros")
     assert "LOSS" in result
     assert "WIN" not in result
+
+
+def test_format_game_no_ansi_when_no_color_set(monkeypatch, cardinals_beat_dodgers):
+    """NO_COLOR in the environment disables ANSI codes even on a TTY."""
+
+    monkeypatch.setenv("NO_COLOR", "")
+    with patch("sys.stdout", Mock(isatty=lambda: True)):
+        result = format_game(cardinals_beat_dodgers)
+    assert "\033" not in result
+    assert "WIN" in result
+
+
+def test_format_game_no_ansi_when_stdout_not_tty(monkeypatch, cardinals_beat_dodgers):
+    """ANSI codes are stripped when output is piped (stdout is not a terminal)."""
+
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    with patch("sys.stdout", Mock(isatty=lambda: False)):
+        result = format_game(cardinals_beat_dodgers)
+    assert "\033" not in result
+    assert "WIN" in result
+
+
+def test_format_game_keeps_ansi_on_tty_without_no_color(monkeypatch, cardinals_beat_dodgers):
+    """ANSI colors are kept on a TTY when NO_COLOR is unset (regression guard)."""
+
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    with patch("sys.stdout", Mock(isatty=lambda: True)):
+        result = format_game(cardinals_beat_dodgers)
+    assert "\033" in result

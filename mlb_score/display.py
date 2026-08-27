@@ -6,6 +6,8 @@ decision about what appears in the header, not an orchestration decision about w
 
 from __future__ import annotations
 
+import os
+import sys
 from datetime import date
 
 from mlb_score.models import Game, GameState, Schedule
@@ -34,8 +36,24 @@ def date_label(today: bool, days: int, has_explicit_date: bool) -> str:
     return f"Last {days} days"
 
 
+def _color_enabled() -> bool:
+    """True when ANSI output is appropriate for the current environment.
+
+    Honors the NO_COLOR convention (set to any value, including empty)
+    and auto-disables when stdout is not a terminal (e.g. piped output).
+    """
+    if "NO_COLOR" in os.environ:
+        return False
+    try:
+        return sys.stdout.isatty()
+    except (AttributeError, ValueError):
+        return False
+
+
 def _colorize(text: str, *codes: str) -> str:
-    """Wrap text with ANSI color codes."""
+    """Wrap text with ANSI color codes (no-op when color is disabled)."""
+    if not _color_enabled():
+        return text
     return f"{''.join(codes)}{text}{RST}"
 
 
