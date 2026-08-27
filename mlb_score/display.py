@@ -123,8 +123,8 @@ def print_results(schedule: Schedule, target_date: date, team: str, *, label: st
 
         # Date header (shown when multiple dates or between groups)
         if len(dates) > 1:
-            date_label = _colorize(f"📅  {lookup_date.strftime('%Y-%m-%d (%a)')}", BOLD, CYN)
-            print(f"  {date_label}")
+            group_header = _colorize(f"📅  {lookup_date.strftime('%Y-%m-%d (%a)')}", BOLD, CYN)
+            print(f"  {group_header}")
             print(_colorize("  " + sep, DIM))
             print()
 
