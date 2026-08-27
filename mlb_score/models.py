@@ -59,6 +59,7 @@ class Game:
     state: GameState
     venue: str = ""
     day_night: str = ""
+    detailed_state: str = ""
 
     @property
     def winner(self) -> Optional[TeamInfo]:

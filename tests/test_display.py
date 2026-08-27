@@ -68,6 +68,34 @@ def test_format_game_live():
     assert "LIVE" in result
 
 
+def test_format_game_live_shows_detailed_state_next_to_score():
+    game = Game(
+        away_team=TeamScore(team=TeamInfo(name="Cardinals"), score=3, is_winner=None),
+        home_team=TeamScore(team=TeamInfo(name="Dodgers"), score=2, is_winner=None),
+        venue="Busch Stadium",
+        day_night="Night",
+        state=GameState.LIVE,
+        detailed_state="Top 7th",
+    )
+    result = format_game(game)
+    assert "3–2 (Top 7th)" in result
+
+
+def test_format_game_final_omits_detailed_state(cardinals_beat_dodgers):
+    game = cardinals_beat_dodgers
+    # Rebuild as FINAL with a detailedState that must not be displayed
+    replaced = Game(
+        away_team=game.away_team,
+        home_team=game.home_team,
+        state=game.state,
+        venue=game.venue,
+        day_night=game.day_night,
+        detailed_state="Final",
+    )
+    result = format_game(replaced)
+    assert "Final)" not in result
+
+
 def test_format_game_final_score_follows_away_home_order(cardinals_beat_dodgers):
     # Cardinals (away, winner) 5 – Dodgers (home) 3
     result = format_game(cardinals_beat_dodgers)
