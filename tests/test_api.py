@@ -184,6 +184,26 @@ def test_parse_game_live():
     assert parse_game(raw).state == GameState.LIVE
 
 
+def test_parse_game_live_extracts_detailed_state():
+    raw = {
+        "teams": _TEAMS,
+        "status": {"statusCode": "I", "detailedState": "Top 7th"},
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Day",
+    }
+    assert parse_game(raw).detailed_state == "Top 7th"
+
+
+def test_parse_game_without_detailed_state_defaults_to_empty():
+    raw = {
+        "teams": _TEAMS,
+        "status": {"statusCode": "F"},
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Night",
+    }
+    assert parse_game(raw).detailed_state == ""
+
+
 def test_parse_game_unknown_status_defaults_to_scheduled():
     raw = {
         "teams": _TEAMS,

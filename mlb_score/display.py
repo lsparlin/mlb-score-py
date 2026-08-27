@@ -83,7 +83,10 @@ def format_game(game: Game, team: str = "") -> str:
          5–3  · loanDepot park  · Night  · WIN
     """
     # Score in bright white, venue/night in dim
-    score = _colorize(_score_string(game), BOLD, WHT)
+    score_text = _score_string(game)
+    if game.state == GameState.LIVE and game.detailed_state:
+        score_text = f"{score_text} ({game.detailed_state})"
+    score = _colorize(score_text, BOLD, WHT)
     venue = _colorize(f"{game.venue}  ·  {game.day_night.title()}", DIM)
 
     # Color the label based on game state

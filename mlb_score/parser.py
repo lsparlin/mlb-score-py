@@ -62,6 +62,7 @@ def parse_game(raw: dict[str, Any]) -> Game:
         venue=raw.get("venue", {}).get("name", ""),
         day_night=raw.get("dayNight", ""),
         state=state,
+        detailed_state=status.get("detailedState", ""),
     )
 
 
