@@ -26,7 +26,9 @@ def test_fetch_schedule_empty_date_returns_empty_list():
     """fetch_schedule returns an empty list when the API has no games for the date."""
     client = MlbClient()
     with patch("mlb_score.client.urlopen") as mock_urlopen:
-        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: b'{"dates": [{"games": []}]}')
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(
+            read=lambda: b'{"dates": [{"games": []}]}'
+        )
         mock_urlopen.return_value.__exit__ = lambda s, *a: None
         games = client.fetch_schedule("2026-04-21")
     assert games == []
@@ -95,7 +97,9 @@ def test_fetch_schedule_parses_games_into_models(schedule_raw):
         raw_json = load_fixture("schedule_2026-04-21.json")
         import json
 
-        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(read=lambda: json.dumps(raw_json).encode())
+        mock_urlopen.return_value.__enter__ = lambda s: MagicMock(
+            read=lambda: json.dumps(raw_json).encode()
+        )
         mock_urlopen.return_value.__exit__ = lambda s, *a: None
         games = client.fetch_schedule("2026-04-21")
 
@@ -158,7 +162,12 @@ def test_parse_games_from_fixture():
 
 
 def test_parse_game_final():
-    raw = {"teams": _TEAMS, "status": {"statusCode": "F"}, "venue": {"name": "Busch Stadium"}, "dayNight": "Night"}
+    raw = {
+        "teams": _TEAMS,
+        "status": {"statusCode": "F"},
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Night",
+    }
     game = parse_game(raw)
     assert game.state == GameState.FINAL
     assert game.away_team.team.name == "Cardinals"
@@ -168,12 +177,22 @@ def test_parse_game_final():
 
 
 def test_parse_game_live():
-    raw = {"teams": _TEAMS, "status": {"statusCode": "I"}, "venue": {"name": "Busch Stadium"}, "dayNight": "Day"}
+    raw = {
+        "teams": _TEAMS,
+        "status": {"statusCode": "I"},
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Day",
+    }
     assert parse_game(raw).state == GameState.LIVE
 
 
 def test_parse_game_unknown_status_defaults_to_scheduled():
-    raw = {"teams": _TEAMS, "status": {"statusCode": "X"}, "venue": {"name": "Busch Stadium"}, "dayNight": "Night"}
+    raw = {
+        "teams": _TEAMS,
+        "status": {"statusCode": "X"},
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Night",
+    }
     assert parse_game(raw).state == GameState.SCHEDULED
 
 

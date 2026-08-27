@@ -18,7 +18,7 @@ GRN = "\033[32m"  # green
 RED = "\033[31m"  # red
 WHT = "\033[97m"  # bright white
 YEL = "\033[93m"  # yellow
-RST = "\033[0m"   # reset
+RST = "\033[0m"  # reset
 
 
 def date_label(today: bool, days: int, has_explicit_date: bool) -> str:
@@ -48,9 +48,7 @@ def _score_string(game: Game) -> str:
 def _searched_team_won(game: Game, team: str) -> bool:
     team_lower = team.lower()
     searched_is_away = team_lower in game.away_team.team.name.lower()
-    return (
-        searched_is_away and game.winner == game.away_team.team
-    ) or (
+    return (searched_is_away and game.winner == game.away_team.team) or (
         not searched_is_away and game.winner == game.home_team.team
     )
 
@@ -81,10 +79,7 @@ def format_game(game: Game, team: str = "") -> str:
     else:  # GameState.SCHEDULED
         label = _colorize("SCHEDULED", DIM)
 
-    return (
-        f"  {_matchup_string(game)}\n"
-        f"     {score}  · {venue}  · {label}"
-    )
+    return f"  {_matchup_string(game)}\n     {score}  · {venue}  · {label}"
 
 
 def print_results(schedule: Schedule, target_date: date, team: str, *, label: str = "") -> None:
@@ -110,9 +105,7 @@ def print_results(schedule: Schedule, target_date: date, team: str, *, label: st
 
         # Date header (shown when multiple dates or between groups)
         if len(dates) > 1:
-            date_label = _colorize(
-                f"📅  {lookup_date.strftime('%Y-%m-%d (%a)')}", BOLD, CYN
-            )
+            date_label = _colorize(f"📅  {lookup_date.strftime('%Y-%m-%d (%a)')}", BOLD, CYN)
             print(f"  {date_label}")
             print(_colorize("  " + sep, DIM))
             print()
