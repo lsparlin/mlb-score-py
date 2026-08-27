@@ -21,8 +21,8 @@ uv run mlb-score <team> [-d YYYY-MM-DD] [--today] [-n <days>]
 mlb_score/
 ├── __init__.py      # public API surface (MlbClient, Game, GameState, TeamInfo, etc.)
 ├── client.py        # MLB Stats API client (MlbClient class, fetch_schedule, fetch_date_range)
-├── models.py        # Game, TeamInfo, TeamScore, GameState dataclasses/enums
-├── queries.py       # filtering and parsing logic
+├── models.py        # Game, TeamInfo, TeamScore, GameState dataclasses/enums; Schedule.for_team filtering
+├── parser.py        # JSON-to-model parsing (raw API JSON → typed models)
 ├── display.py       # ANSI color formatting and printing
 └── cli.py           # argument parsing + entry point (returns exit code)
 ```
