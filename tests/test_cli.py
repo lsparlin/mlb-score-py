@@ -117,6 +117,18 @@ def test_main_returns_one_when_no_games(capsys):
     assert "No games found" in captured.out
 
 
+def test_main_no_games_message_reflects_range(capsys):
+    with patch("mlb_score.cli.MlbClient") as mock_client_cls:
+        mock_client_cls.return_value.fetch_date_range.return_value = {}
+        code = main(["Cardinals", "-n", "3"])
+
+    assert code == 1
+    captured = capsys.readouterr()
+    # The message must describe the range searched, not just the end date.
+    assert "No games found" in captured.out
+    assert "between" in captured.out
+
+
 # --- main() API error ---
 
 

@@ -88,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     schedule = Schedule.for_team(games_by_date, args.team)
 
     if schedule.is_empty:
-        print_no_results(args.team, target_date)
+        print_no_results(args.team, target_date, args.days)
         return 1
 
     print_results(schedule, target_date, args.team, label=label)
