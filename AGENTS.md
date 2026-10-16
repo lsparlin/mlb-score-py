@@ -24,7 +24,8 @@ mlb_score/
 ├── models.py        # Game, TeamInfo, TeamScore, GameState dataclasses/enums; Schedule.for_team filtering
 ├── parser.py        # JSON-to-model parsing (raw API JSON → typed models)
 ├── display.py       # ANSI color formatting and printing
-└── cli.py           # argument parsing + entry point (returns exit code)
+├── cli.py           # argument parsing + entry point (returns exit code)
+└── __main__.py      # enables `python -m mlb_score`
 ```
 
 ## Key details
@@ -52,6 +53,30 @@ uv run ruff format . # formatting
 | pytest | Testing (fixtures from real MLB API responses in `tests/fixtures/`) |
 | ruff | Linting + formatting (E, F, I, N, W rules) |
 | uv | Dependency management (`uv.lock` lockfile) |
+
+## Documentation workflow
+
+PRDs are **change proposals**, not living specs — a completed PRD is stale by
+definition on a maintained project, so it gets archived rather than kept
+current.
+
+- `docs/product.md` — the product's target state (what it does / should do,
+  at the behavior level). Update when the product's *intent* changes, not on
+  every feature.
+- `docs/prd/` — active PRDs: one per in-flight change, kept short and focused
+  on the delta.
+- `docs/prd/archive/` — when a PRD **lands or is superseded**, move it here
+  in the same PR that completes it, with a final status header: `✅ Implemented`
+  or `❌ Superseded` (plus a line on what replaced it).
+- Archived PRDs are **immutable** — a snapshot of the proposal as made. Never
+  re-edit them to track later code changes.
+- If a PRD involves a non-obvious *why* (an architectural trade-off), record
+  the decision as a numbered ADR under `docs/decisions/` (create the folder
+  with the first one); routine changes don't warrant one.
+
+Rationale: PRDs describe a *delta*; the product doc describes *state*. The
+moment a delta lands, its description goes stale — the state (code +
+product doc) stays the source of truth.
 
 ## When asked about MLB scores
 
