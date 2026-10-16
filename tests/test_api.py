@@ -214,6 +214,25 @@ def test_parse_game_unknown_status_defaults_to_scheduled():
     assert parse_game(raw).state == GameState.SCHEDULED
 
 
+def test_parse_game_missing_status_code_defaults_to_scheduled():
+    raw = {
+        "teams": _TEAMS,
+        "status": {"detailedState": "Pregame"},
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Night",
+    }
+    assert parse_game(raw).state == GameState.SCHEDULED
+
+
+def test_parse_game_missing_status_defaults_to_scheduled():
+    raw = {
+        "teams": _TEAMS,
+        "venue": {"name": "Busch Stadium"},
+        "dayNight": "Night",
+    }
+    assert parse_game(raw).state == GameState.SCHEDULED
+
+
 def test_parse_team_is_home_flag():
     away = parse_team(_TEAMS, "away")
     home = parse_team(_TEAMS, "home")
