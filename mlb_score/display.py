@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import date
+from datetime import date, timedelta
 
 from mlb_score.models import Game, GameState, Schedule
 
@@ -136,9 +136,18 @@ def print_results(schedule: Schedule, target_date: date, team: str, *, label: st
             print()
 
 
-def print_no_results(team: str, target_date: date) -> None:
-    """Print a message when no games are found."""
-    msg = _colorize(f"No games found for '{team}' on {target_date}.", RED)
-    hint = _colorize("Try a different team name or check the date.", DIM)
+def print_no_results(team: str, target_date: date, days: int = 1) -> None:
+    """Print a message when no games are found.
+
+    The message reflects the full range that was searched.
+    """
+    if days <= 1:
+        range_text = f"on {target_date}"
+        hint = "Try a different team name or check the date."
+    else:
+        start_date = target_date - timedelta(days=days - 1)
+        range_text = f"between {start_date} and {target_date}"
+        hint = "Try a different team name or a wider date range."
+    msg = _colorize(f"No games found for '{team}' {range_text}.", RED)
     print(f"  {msg}")
-    print(f"  {hint}")
+    print(f"  {_colorize(hint, DIM)}")

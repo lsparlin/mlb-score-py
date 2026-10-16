@@ -42,6 +42,29 @@ def test_print_no_results_outputs(capsys):
     assert "No games found" in captured.out
 
 
+def test_print_no_results_single_day(capsys):
+    print_no_results("Pirates", date(2026, 4, 21))
+    captured = capsys.readouterr()
+    assert "No games found for 'Pirates' on 2026-04-21." in captured.out
+    # Both lines are indented; pin the exact rendering.
+    lines = [line for line in captured.out.splitlines() if line.strip()]
+    assert lines[0] == "  No games found for 'Pirates' on 2026-04-21."
+    assert lines[1] == "  Try a different team name or check the date."
+
+
+def test_print_no_results_two_day_range(capsys):
+    print_no_results("Pirates", date(2026, 4, 21), days=2)
+    captured = capsys.readouterr()
+    assert "No games found for 'Pirates' between 2026-04-20 and 2026-04-21." in captured.out
+
+
+def test_print_no_results_fourteen_day_range(capsys):
+    print_no_results("Cardinals", date(2026, 10, 15), days=14)
+    captured = capsys.readouterr()
+    assert "No games found for 'Cardinals' between 2026-10-02 and 2026-10-15." in captured.out
+    assert "wider date range" in captured.out
+
+
 def test_format_game_scheduled():
     game = Game(
         away_team=TeamScore(team=TeamInfo(name="Cardinals"), score=0, is_winner=None),
