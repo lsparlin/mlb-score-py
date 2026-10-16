@@ -1,5 +1,7 @@
 # PRD: Input Validation & Robustness
 
+## Status: ✅ Implemented
+
 ## Goal
 Prevent the application from crashing with tracebacks when presented with invalid user input or unexpected API responses.
 
@@ -17,8 +19,6 @@ Several parts of the application assume a "happy path":
 
 ## Expected Outcome
 The tool will no longer crash with Python tracebacks. Instead, it will provide helpful, human-readable error messages, improving the perceived quality and reliability of the tool.
-
-## Status: ✅ Implemented
 
 ## Implementation
 - **`cli.py`**: `resolve_target_date()` wraps `date.fromisoformat` in try/except, raises `UserError` on `ValueError` with a formatted message.
