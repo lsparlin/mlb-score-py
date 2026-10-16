@@ -1,5 +1,14 @@
 # PRD: Parallelize API Requests
 
+## Status: ❌ Superseded — do not implement
+
+> **Superseded by the batched date-range fetch** (PR #1, commit `cc56ff1`).
+> The problem this PRD targeted no longer exists: `MlbClient.fetch_date_range`
+> covers the entire requested range with a **single** API request
+> (`startDate`/`endDate`), so there are no N sequential per-date calls left to
+> parallelize. Archived as a historical record of the design path that was
+> never needed.
+
 ## Goal
 Reduce the latency of requests spanning multiple days by performing API calls in parallel.
 
