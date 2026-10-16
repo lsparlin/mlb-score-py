@@ -7,7 +7,7 @@ name = "mlb-score"
 version = "0.1.0"
 description = "CLI tool to look up MLB game outcomes for a given team."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Lewis Sparlin"},
