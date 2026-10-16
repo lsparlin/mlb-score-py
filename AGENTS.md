@@ -54,6 +54,13 @@ uv run ruff format . # formatting
 | ruff | Linting + formatting (E, F, I, N, W rules) |
 | uv | Dependency management (`uv.lock` lockfile) |
 
+## Code style
+
+- **Docstrings state expected behavior, not rationale.** One or two lines on
+  what the function does. The *why* (design decisions, bug history) belongs
+  in the commit message, a PRD, or — when the behavior must keep holding — a
+  regression test, not in the docstring.
+
 ## Documentation workflow
 
 PRDs are **change proposals**, not living specs — a completed PRD is stale by
