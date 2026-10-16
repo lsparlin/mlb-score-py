@@ -54,7 +54,7 @@ def parse_games_by_date(raw: dict[str, Any]) -> dict[date, list[Game]]:
 def parse_game(raw: dict[str, Any]) -> Game:
     teams = raw.get("teams", {})
     status = raw.get("status", {})
-    code = status.get("statusCode", "F")
+    code = status.get("statusCode")
     state = MLB_STATUS_CODE_MAP.get(code, GameState.SCHEDULED)
     return Game(
         away_team=parse_team(teams, "away"),
